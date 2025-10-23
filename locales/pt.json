@@ -1,0 +1,88 @@
+{
+  "language": "Português",
+  "select_language": "Escolha seu idioma",
+  "select_language_subtitle": "Selecione o idioma de sua preferência",
+  "continue": "Continuar",
+  
+  "onboarding_1_title": "Descubra Angola",
+  "onboarding_1_desc": "Explore atrações incríveis, joias escondidas e experiências inesquecíveis por toda Angola.",
+  
+  "onboarding_2_title": "Sugestões Inteligentes",
+  "onboarding_2_desc": "Receba recomendações de viagem personalizadas com IA baseadas nas suas preferências e localização.",
+  
+  "onboarding_3_title": "Planeie a Sua Jornada",
+  "onboarding_3_desc": "Crie itinerários personalizados, salve favoritos e organize a sua aventura angolana perfeita.",
+  
+  "next": "Avançar",
+  "skip": "Pular",
+  "get_started": "Começar",
+  
+  "welcome_back": "Bem-vindo de volta!",
+  "login_subtitle": "Entre na sua conta para continuar",
+  "login": "Entrar",
+  "email": "E-mail",
+  "email_placeholder": "seu@email.com",
+  "password": "Senha",
+  "password_placeholder": "Digite sua senha",
+  "forgot_password": "Esqueceu a senha?",
+  "dont_have_account": "Não tem uma conta?",
+  "sign_up": "Registre-se",
+  "or_continue_with": "Ou continue com",
+  "sign_in_with_google": "Entrar com Google",
+  
+  "create_account": "Criar Conta",
+  "register_subtitle": "Junte-se à comunidade Wenda",
+  "register": "Registrar",
+  "name": "Nome",
+  "name_placeholder": "Seu nome completo",
+  "confirm_password": "Confirmar senha",
+  "confirm_password_placeholder": "Digite sua senha novamente",
+  "already_have_account": "Já tem uma conta?",
+  "sign_in": "Entre",
+  "by_signing_up": "Ao se registrar, você concorda com nossos",
+  "terms_of_service": "Termos de Serviço",
+  "and": "e",
+  "privacy_policy": "Política de Privacidade",
+  
+  "enter_code": "Insira o código de confirmação",
+  "welcome_title": "Bem-vindo ao Wenda",
+  "welcome_desc": "Descubra as atrações de Angola e planeie a sua jornada perfeita.",
+  
+  "discover": "Descobrir",
+  "map": "Mapa",
+  "favorites": "Favoritos",
+  "profile": "Perfil",
+  
+  "search_placeholder": "Procurar atrações, locais, eventos...",
+  "featured_destinations": "Destinos em Destaque",
+  "top_destinations": "Principais Destinos",
+  "recommended_for_you": "Recomendado para Si",
+  "events_nearby": "Eventos Próximos",
+  "view_all": "Ver Tudo",
+  
+  "filters": "Filtros",
+  "cultural": "Cultural",
+  "natural": "Natural",
+  "historical": "Histórico",
+  "distance": "Distância",
+  "popularity": "Popularidade",
+  
+  "add_to_favorites": "Adicionar aos Favoritos",
+  "add_to_trip": "Adicionar à Viagem",
+  "open_on_map": "Abrir no Mapa",
+  "share": "Partilhar",
+  
+  "overview": "Visão Geral",
+  "reviews": "Avaliações",
+  "nearby_places": "Locais Próximos",
+  
+  "my_trips": "Minhas Viagens",
+  "settings": "Configurações",
+  "preferences": "Preferências",
+  "notifications": "Notificações",
+  "language_settings": "Idioma",
+  "about": "Sobre",
+  "contact": "Contacto",
+  "logout": "Sair",
+  "delete_account": "Eliminar Conta"
+}
