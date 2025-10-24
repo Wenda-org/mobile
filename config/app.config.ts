@@ -1,17 +1,17 @@
 // App Configuration
-// Centralized config for the Amistoso mobile app
+// Centralized config for the Wenda mobile app
 
 export const config = {
   // App Info
   app: {
-    name: 'Amistoso',
+    name: 'Wenda',
     version: '1.0.0',
     description: 'Conecte times e jogadores para partidas amistosas',
   },
 
   // API Configuration
   api: {
-    baseUrl: process.env.API_URL || 'https://api.amistoso.com',
+    baseUrl: process.env.API_URL || 'https://api.wenda.com',
     timeout: 10000, // 10 seconds
     endpoints: {
       auth: {
@@ -80,7 +80,7 @@ export const config = {
 
   // Socket.IO Configuration (for future use)
   socket: {
-    url: process.env.SOCKET_URL || 'https://socket.amistoso.com',
+    url: process.env.SOCKET_URL || 'https://socket.wenda.com',
     options: {
       transports: ['websocket'],
       autoConnect: false,

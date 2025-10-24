@@ -1,11 +1,11 @@
 {
   "expo": {
-    "name": "Amistoso",
-    "slug": "Amistoso",
+    "name": "Wenda",
+    "slug": "Wenda",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "amistoso",
+    "scheme": "wenda",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "splash": {
