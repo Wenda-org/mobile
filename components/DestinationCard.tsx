@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, Image, TouchableOpacity } from 'react-native';
 import { useColorScheme } from './useColorScheme';
 import { useRouter } from 'expo-router';
+import { useFavoritesStore } from '../stores/useFavoritesStore';
 
 export interface Destination {
   id: string;
@@ -22,13 +23,31 @@ export default function DestinationCard({ destination, onPress }: DestinationCar
   const colorScheme = useColorScheme();
   const isDark = colorScheme === 'dark';
   const router = useRouter();
+  const { addFavorite, removeFavorite, isFavorite } = useFavoritesStore();
+  const favorited = isFavorite(destination.id);
 
   const handlePress = () => {
     if (onPress) {
       onPress();
     } else {
       // Navigate to destination details
-      // router.push(`/destination/${destination.id}`);
+      router.push(`/destination/${destination.id}`);
+    }
+  };
+
+  const handleToggleFavorite = (e: any) => {
+    e.stopPropagation();
+    if (favorited) {
+      removeFavorite(destination.id);
+    } else {
+      addFavorite({
+        id: destination.id,
+        name: destination.name,
+        location: destination.location,
+        image: destination.image,
+        rating: destination.rating,
+        category: destination.category,
+      });
     }
   };
 
@@ -68,8 +87,11 @@ export default function DestinationCard({ destination, onPress }: DestinationCar
         )}
         
         {/* Favorite Button */}
-        <TouchableOpacity className="absolute top-3 right-3 w-10 h-10 bg-white/90 rounded-full items-center justify-center">
-          <Text className="text-lg">♡</Text>
+        <TouchableOpacity 
+          onPress={handleToggleFavorite}
+          className="absolute top-3 right-3 w-10 h-10 bg-white/90 rounded-full items-center justify-center"
+        >
+          <Text className="text-lg">{favorited ? '❤️' : '♡'}</Text>
         </TouchableOpacity>
       </View>
 
@@ -97,7 +119,7 @@ export default function DestinationCard({ destination, onPress }: DestinationCar
             </Text>
           </View>
           
-          {destination.distance && (
+          {destination.distance !== undefined && (
             <Text className={`text-sm ${isDark ? 'text-text-dark-secondary' : 'text-text-light-secondary'}`}>
               {destination.distance.toFixed(1)} km
             </Text>

@@ -1,53 +1,47 @@
+// components/SearchBar.tsx
 import React from 'react';
-import { View, TextInput, TouchableOpacity } from 'react-native';
-import { useColorScheme } from './useColorScheme';
+import { View, TextInput, TouchableOpacity, Text } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 
 interface SearchBarProps {
-  value: string;
-  onChangeText: (text: string) => void;
-  placeholder?: string;
+  value?: string;
+  onChangeText?: (text: string) => void;
   onSearch?: () => void;
+  placeholder?: string;
+  isDark?: boolean;
 }
 
-export default function SearchBar({ value, onChangeText, placeholder, onSearch }: SearchBarProps) {
-  const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
-
+export default function SearchBar({
+  value,
+  onChangeText,
+  onSearch,
+  placeholder = 'Search...',
+  isDark = false,
+}: SearchBarProps) {
   return (
-    <View className="mb-4">
-      <View
-        className={`flex-row items-center px-4 py-3 rounded-xl ${
-          isDark ? 'bg-background-dark-secondary' : 'bg-background-light-secondary'
-        }`}
+    <View
+      className={`flex-row items-center px-4 py-3 mb-5 rounded-2xl border
+        ${isDark ? 'bg-gray-800 border-gray-700' : 'bg-gray-100 border-gray-300'}`}
+    >
+      <TextInput
+        value={value}
+        onChangeText={onChangeText}
+        placeholder={placeholder}
+        placeholderTextColor={isDark ? '#aaa' : '#555'}
+        className={`flex-1 text-base ${isDark ? 'text-white' : 'text-black'}`}
+      />
+      <TouchableOpacity
+        onPress={onSearch}
+        className="ml-3 w-8 h-8 items-center justify-center rounded-full bg-primary/10"
       >
-        {/* Search Icon */}
-        <TouchableOpacity onPress={onSearch} className="mr-2">
-          <View className="w-5 h-5 items-center justify-center">
-            <View className={`text-lg ${isDark ? 'text-text-dark-secondary' : 'text-text-light-secondary'}`}>
-              🔍
-            </View>
-          </View>
-        </TouchableOpacity>
-
-        {/* Input */}
-        <TextInput
-          value={value}
-          onChangeText={onChangeText}
-          placeholder={placeholder}
-          placeholderTextColor={isDark ? '#B0B3B8' : '#65676B'}
-          className={`flex-1 text-base ${isDark ? 'text-text-dark' : 'text-text-light'}`}
-          onSubmitEditing={onSearch}
-        />
-
-        {/* Filter Button */}
-        {value.length > 0 && (
-          <TouchableOpacity onPress={() => onChangeText('')} className="ml-2">
-            <View className={`text-base ${isDark ? 'text-text-dark-secondary' : 'text-text-light-secondary'}`}>
-              ✕
-            </View>
-          </TouchableOpacity>
-        )}
-      </View>
+        <Text className={`text-lg ${isDark ? 'text-primary-light' : 'text-primary-dark'}`}>
+          <Ionicons
+            name="search"
+            size={20}
+            color={isDark ? '#888' : '#555'}
+          />
+        </Text>
+      </TouchableOpacity>
     </View>
   );
 }

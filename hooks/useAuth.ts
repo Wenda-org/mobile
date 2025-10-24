@@ -1,34 +1,14 @@
 import * as SecureStore from 'expo-secure-store';
-import * as Google from 'expo-auth-session/providers/google';
-import * as WebBrowser from 'expo-web-browser';
 import { useState, useEffect } from 'react';
-
-// Complete the browser session before starting auth
-WebBrowser.maybeCompleteAuthSession();
 
 // This hook manages authentication state
 export function useAuth() {
   const [user, setUser] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Google OAuth configuration
-  const [request, response, promptAsync] = Google.useAuthRequest({
-    // TODO: Add your Google OAuth client IDs here
-    // androidClientId: 'YOUR_ANDROID_CLIENT_ID',
-    // iosClientId: 'YOUR_IOS_CLIENT_ID',
-    // webClientId: 'YOUR_WEB_CLIENT_ID',
-  });
-
   useEffect(() => {
     loadUser();
   }, []);
-
-  useEffect(() => {
-    if (response?.type === 'success') {
-      const { authentication } = response;
-      handleGoogleLogin(authentication);
-    }
-  }, [response]);
 
   const loadUser = async () => {
     try {
@@ -48,10 +28,10 @@ export function useAuth() {
       // TODO: Call your API endpoint
       // const response = await axios.post('/api/auth/login', { email, password });
       // const userData = response.data;
-      
+
       // Mock user data for now
       const userData = { email, id: '123', name: 'User' };
-      
+
       await SecureStore.setItemAsync('user', JSON.stringify(userData));
       await SecureStore.setItemAsync('token', 'mock-jwt-token');
       setUser(userData);
@@ -67,10 +47,10 @@ export function useAuth() {
       // TODO: Call your API endpoint
       // const response = await axios.post('/api/auth/register', { name, email, password });
       // const userData = response.data;
-      
+
       // Mock user data for now
       const userData = { email, id: '123', name };
-      
+
       await SecureStore.setItemAsync('user', JSON.stringify(userData));
       await SecureStore.setItemAsync('token', 'mock-jwt-token');
       setUser(userData);
@@ -81,27 +61,9 @@ export function useAuth() {
     }
   };
 
-  const handleGoogleLogin = async (authentication: any) => {
-    try {
-      // TODO: Send token to your backend
-      // const response = await axios.post('/api/auth/google', { token: authentication.accessToken });
-      // const userData = response.data;
-      
-      console.log('Google authentication:', authentication);
-      
-      // Mock user data for now
-      const userData = { email: 'google@user.com', id: '456', name: 'Google User' };
-      
-      await SecureStore.setItemAsync('user', JSON.stringify(userData));
-      await SecureStore.setItemAsync('token', authentication.accessToken);
-      setUser(userData);
-    } catch (error) {
-      console.error('Google login error:', error);
-    }
-  };
-
+  // Temporarily disabled Google login
   const loginWithGoogle = async () => {
-    await promptAsync();
+    console.log('Google login temporarily disabled');
   };
 
   const logout = async () => {

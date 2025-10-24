@@ -1,36 +1,21 @@
-import React, { useState } from 'react';
-import { View, Text, ScrollView, TouchableOpacity } from 'react-native';
+import React, { useEffect } from 'react';
+import { View, Text, ScrollView } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { useColorScheme } from '../../components/useColorScheme';
-import DestinationCard, { Destination } from '../../components/DestinationCard';
-
-// Mock favorites data
-const mockFavorites: Destination[] = [
-  {
-    id: '1',
-    name: 'Fortaleza de São Miguel',
-    location: 'Luanda',
-    image: 'https://via.placeholder.com/400x300',
-    rating: 4.5,
-    distance: 5.2,
-    category: 'Historical',
-  },
-  {
-    id: '3',
-    name: 'Kalandula Falls',
-    location: 'Malanje',
-    image: 'https://via.placeholder.com/400x300',
-    rating: 4.9,
-    distance: 350.0,
-    category: 'Natural',
-  },
-];
+import DestinationCard from '../../components/DestinationCard';
+import { useFavoritesStore } from '../../stores/useFavoritesStore';
 
 export default function FavoritesScreen() {
   const { t } = useTranslation();
   const colorScheme = useColorScheme();
   const isDark = colorScheme === 'dark';
-  const [favorites] = useState<Destination[]>(mockFavorites);
+  const { favorites, loadFavorites, isLoaded } = useFavoritesStore();
+
+  useEffect(() => {
+    if (!isLoaded) {
+      loadFavorites();
+    }
+  }, [isLoaded, loadFavorites]);
 
   return (
     <View className={`flex-1 ${isDark ? 'bg-background-dark' : 'bg-background-light'}`}>
@@ -59,7 +44,13 @@ export default function FavoritesScreen() {
         /* Favorites List */
         <ScrollView showsVerticalScrollIndicator={false} className="px-4">
           {favorites.map((destination) => (
-            <DestinationCard key={destination.id} destination={destination} />
+            <DestinationCard 
+              key={destination.id} 
+              destination={{
+                ...destination,
+                image: destination.image || '',
+              }} 
+            />
           ))}
         </ScrollView>
       )}
