@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, TouchableOpacity } from 'react-native';
+import { View, Text, TouchableOpacity, Image } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { useColorScheme } from '../components/useColorScheme';
@@ -12,16 +12,19 @@ export default function LanguageScreen() {
 
   const selectLanguage = (lang: string) => {
     i18n.changeLanguage(lang);
-    router.push('/onboarding/0');
+    // Navigate into the auth-grouped onboarding route
+    router.push('/(auth)/onboarding/0');
   };
 
   return (
     <View className={`flex-1 ${isDark ? 'bg-background-dark' : 'bg-background-light'}`}>
       <View className="flex-1 justify-center items-center px-6">
         {/* Logo */}
-        {/* <img src="../assets/images/logo.png"></img> */}
         <View className="mb-12">
           <View className="w-24 h-24 rounded-full bg-primary items-center justify-center mb-4">
+            {/* <Image
+              source={require("../assets/images/logo.png")}
+            /> */}
             <Text className="text-white text-4xl font-bold">W</Text>
           </View>
           <Text className={`text-3xl font-bold text-center ${isDark ? 'text-text-dark' : 'text-text-light'}`}>

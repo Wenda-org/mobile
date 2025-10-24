@@ -1,8 +1,34 @@
-import React, { useState } from 'react';
-import { View, Text, ScrollView, TouchableOpacity } from 'react-native';
+import React, { useMemo, useState } from 'react';
+import { View, Text, ScrollView } from 'react-native';
+import MapView, { Marker, UrlTile, Callout, PROVIDER_DEFAULT } from 'react-native-maps';
 import { useTranslation } from 'react-i18next';
 import { useColorScheme } from '../../components/useColorScheme';
 import FilterButton from '../../components/FilterButton';
+
+// Mock destinations with coordinates
+const MOCK_POINTS = [
+  {
+    id: 'fortaleza',
+    title: 'Fortaleza de São Miguel',
+    description: 'Historic fortress with city views',
+    coordinate: { latitude: -8.8057, longitude: 13.2343 }, // Luanda
+    category: 'historical',
+  },
+  {
+    id: 'tundavala',
+    title: 'Tundavala Gap',
+    description: 'Stunning viewpoint near Lubango',
+    coordinate: { latitude: -14.9225, longitude: 13.5053 },
+    category: 'natural',
+  },
+  {
+    id: 'kalandula',
+    title: 'Kalandula Falls',
+    description: 'One of Africa\'s largest waterfalls',
+    coordinate: { latitude: -9.0686, longitude: 16.0056 },
+    category: 'natural',
+  },
+];
 
 export default function MapScreen() {
   const { t } = useTranslation();
@@ -16,9 +42,13 @@ export default function MapScreen() {
     { id: 'historical', label: t('historical'), icon: '🏰' },
   ];
 
+  const visiblePoints = useMemo(() => {
+    return activeFilter ? MOCK_POINTS.filter(p => p.category === activeFilter) : MOCK_POINTS;
+  }, [activeFilter]);
+
   return (
     <View className={`flex-1 ${isDark ? 'bg-background-dark' : 'bg-background-light'}`}>
-      {/* Filters - Fixed at top */}
+      {/* Filters */}
       <View className="px-4 py-3 border-b border-border-light dark:border-border-dark">
         <ScrollView horizontal showsHorizontalScrollIndicator={false}>
           {filters.map((filter) => (
@@ -33,57 +63,44 @@ export default function MapScreen() {
         </ScrollView>
       </View>
 
-      {/* Map Placeholder */}
-      <View className="flex-1 items-center justify-center bg-primary/5">
-        <View className="items-center px-8">
-          <Text className="text-6xl mb-4">🗺️</Text>
-          <Text className={`text-xl font-bold mb-2 text-center ${isDark ? 'text-text-dark' : 'text-text-light'}`}>
-            {t('map')}
-          </Text>
-          <Text className={`text-sm text-center mb-6 ${isDark ? 'text-text-dark-secondary' : 'text-text-light-secondary'}`}>
-            Interactive map view will be implemented here with react-native-maps
-          </Text>
-          
-          {/* Mock Location Markers */}
-          <View className="w-full space-y-2">
-            <View className="bg-white dark:bg-background-dark-secondary p-3 rounded-lg">
-              <Text className={`font-semibold ${isDark ? 'text-text-dark' : 'text-text-light'}`}>
-                📍 Fortaleza de São Miguel
-              </Text>
-              <Text className={`text-xs ${isDark ? 'text-text-dark-secondary' : 'text-text-light-secondary'}`}>
-                Luanda • 5.2 km
-              </Text>
-            </View>
-            
-            <View className="bg-white dark:bg-background-dark-secondary p-3 rounded-lg">
-              <Text className={`font-semibold ${isDark ? 'text-text-dark' : 'text-text-light'}`}>
-                📍 Tundavala Gap
-              </Text>
-              <Text className={`text-xs ${isDark ? 'text-text-dark-secondary' : 'text-text-light-secondary'}`}>
-                Lubango • 120.5 km
-              </Text>
-            </View>
-          </View>
-        </View>
-      </View>
+      {/* Map with OpenStreetMap tiles */}
+      <View style={{ flex: 1, position: 'relative' }}>
+        <MapView
+          provider={PROVIDER_DEFAULT}
+          style={{ flex: 1 }}
+          initialRegion={{
+            latitude: -12.5,
+            longitude: 16.0,
+            latitudeDelta: 10,
+            longitudeDelta: 10,
+          }}
+          showsUserLocation={false}
+        >
+          {/* OSM tile layer */}
+          <UrlTile
+            urlTemplate="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
+            maximumZ={19}
+            flipY={false}
+            zIndex={-1}
+          />
 
-      {/* Bottom Sheet Placeholder */}
-      <View 
-        className={`absolute bottom-0 left-0 right-0 p-4 rounded-t-2xl ${
-          isDark ? 'bg-background-dark-secondary' : 'bg-white'
-        }`}
-        style={{
-          shadowColor: '#000',
-          shadowOffset: { width: 0, height: -2 },
-          shadowOpacity: 0.1,
-          shadowRadius: 8,
-          elevation: 5,
-        }}
-      >
-        <View className="w-12 h-1 bg-border-light dark:bg-border-dark rounded-full self-center mb-3" />
-        <Text className={`text-base font-semibold ${isDark ? 'text-text-dark' : 'text-text-light'}`}>
-          Tap on markers to view details
-        </Text>
+          {/* Markers */}
+          {visiblePoints.map((p) => (
+            <Marker key={p.id} coordinate={p.coordinate} title={p.title} description={p.description}>
+              <Callout>
+                <View style={{ maxWidth: 240 }}>
+                  <Text className="font-bold">{p.title}</Text>
+                  <Text className="text-sm text-text-light-secondary dark:text-text-dark-secondary">{p.description}</Text>
+                </View>
+              </Callout>
+            </Marker>
+          ))}
+        </MapView>
+
+        {/* OSM Attribution */}
+        <View style={{ position: 'absolute', bottom: 6, right: 8, backgroundColor: 'rgba(255,255,255,0.85)', borderRadius: 6, paddingHorizontal: 6, paddingVertical: 2 }}>
+          <Text style={{ fontSize: 10, color: '#333' }}>© OpenStreetMap contributors</Text>
+        </View>
       </View>
     </View>
   );

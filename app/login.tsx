@@ -11,7 +11,7 @@ export default function LoginScreen() {
     // lógica de login aqui
     console.log("Login:", email, password);
     // Exemplo: depois do login, vai para a aba principal
-    router.replace("/(tabs)");
+    router.replace("/(tabs)/map");
   };
 
   return (

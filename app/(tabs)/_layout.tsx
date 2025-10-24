@@ -1,5 +1,6 @@
 import { Tabs } from "expo-router";
 import { useTranslation } from 'react-i18next';
+import { Text } from 'react-native'; // 👈 importa Text
 import '../../global.css';
 import '../../i18n';
 
@@ -55,9 +56,14 @@ export default function TabsLayout() {
 
 function TabIcon({ icon, color }: { icon: string; color: string }) {
   return (
-    <span style={{ fontSize: 24, filter: color === '#136F63' ? 'none' : 'grayscale(100%)' }}>
+    <Text
+      style={{
+        fontSize: 24,
+        color,
+        opacity: color === '#136F63' ? 1 : 0.6,
+      }}
+    >
       {icon}
-    </span>
+    </Text>
   );
 }
-

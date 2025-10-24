@@ -28,7 +28,7 @@ export default function Login() {
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       className={`flex-1 ${isDark ? 'bg-background-dark' : 'bg-background-light'}`}
     >
-      <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
+      <ScrollView contentContainerStyle={{ flexGrow: 1 }} showsVerticalScrollIndicator={false}>
         <View className="flex-1 justify-center px-6 py-12">
           {/* Header */}
           <View className="mb-10">
