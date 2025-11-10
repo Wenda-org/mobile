@@ -1,0 +1,14 @@
+O Wenda é um aplicativo móvel inteligente que ajuda turistas a descobrir Angola de forma personalizada, prática e sustentável. Através de inteligência artificial e análise de dados, o app recomenda destinos, cria roteiros automáticos e oferece informações em tempo real sobre atrações, eventos e rotas.
+
+Entre as suas principais funcionalidades, destacam-se:
+	•	🌍 Descoberta de destinos: o utilizador pode explorar atrações turísticas próximas, culturais, naturais ou históricas, com base em localização e preferências.
+	•	🤖 Recomendações personalizadas: o sistema usa machine learning para sugerir lugares e experiências adaptadas ao perfil de cada visitante.
+	•	🗺️ Mapa interativo: apresenta pontos turísticos no mapa com filtros por tipo, distância ou popularidade.
+	•	🧭 Planeador de viagens (Trip Planner): permite criar e organizar itinerários, otimizar rotas e guardar favoritos.
+	•	🎫 Eventos e novidades: mostra atividades e festivais locais em tempo real.
+	•	👤 Perfil e preferências: cada utilizador pode definir interesses, idioma e tipo de viagem (aventura, cultura, relax, etc.).
+
+As inovações do Wenda estão na integração de dados geoespaciais, recomendações inteligentes e roteirização otimizada, tudo num ambiente simples e intuitivo.
+Além de melhorar a experiência dos turistas, o app contribui para o turismo sustentável, distribuindo fluxos de visitantes e promovendo destinos menos explorados.
+
+Em resumo, o Wenda transforma dados em descobertas, conectando tecnologia, cultura e sustentabilidade para tornar viajar por Angola uma experiência mais inteligente e memorável.

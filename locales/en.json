@@ -61,9 +61,11 @@
   "view_all": "View All",
   
   "filters": "Filters",
+  "all": "All",
   "cultural": "Cultural",
   "natural": "Natural",
   "historical": "Historical",
+  "adventure": "Adventure",
   "distance": "Distance",
   "popularity": "Popularity",
   
