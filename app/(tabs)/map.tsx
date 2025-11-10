@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useEffect, useRef } from 'react';
 import { View, Text, ScrollView } from 'react-native';
 import MapView, { Marker, UrlTile, Callout, PROVIDER_DEFAULT, Circle } from 'react-native-maps';
 import Slider from '@react-native-community/slider';
@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { useColorScheme } from '../../components/useColorScheme';
 import FilterButton from '../../components/FilterButton';
 import { useLocation, calculateDistance } from '../../hooks/useLocation';
+import { useLocalSearchParams } from 'expo-router';
 
 // Mock destinations with coordinates
 const MOCK_POINTS = [
@@ -39,6 +40,26 @@ export default function MapScreen() {
   const [activeFilter, setActiveFilter] = useState<string | null>(null);
   const [radiusKm, setRadiusKm] = useState<number>(500); // Default 500 km radius
   const { location, loading, error } = useLocation();
+  const params = useLocalSearchParams();
+  const mapRef = useRef<MapView>(null);
+
+  // Handle focus on destination when navigating from destination details
+  useEffect(() => {
+    if (params.focusLat && params.focusLon && mapRef.current) {
+      const lat = parseFloat(params.focusLat as string);
+      const lon = parseFloat(params.focusLon as string);
+      
+      // Animate to the destination
+      setTimeout(() => {
+        mapRef.current?.animateToRegion({
+          latitude: lat,
+          longitude: lon,
+          latitudeDelta: 0.5,
+          longitudeDelta: 0.5,
+        }, 1000);
+      }, 500);
+    }
+  }, [params.focusLat, params.focusLon]);
 
   const filters = [
     { id: 'cultural', label: t('cultural'), icon: '🏛️' },
@@ -142,6 +163,7 @@ export default function MapScreen() {
       {/* Map with OpenStreetMap tiles */}
       <View style={{ flex: 1, position: 'relative' }}>
         <MapView
+          ref={mapRef}
           provider={PROVIDER_DEFAULT}
           style={{ flex: 1 }}
           initialRegion={initialRegion}

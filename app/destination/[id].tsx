@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import MapView, { Marker, UrlTile, PROVIDER_DEFAULT } from 'react-native-maps';
 import { useColorScheme } from '../../components/useColorScheme';
 import { useFavoritesStore } from '../../stores/useFavoritesStore';
+import TripSelectorModal from '../../components/TripSelectorModal';
 
 const { width } = Dimensions.get('window');
 
@@ -84,6 +85,7 @@ export default function DestinationDetailsScreen() {
   const isDark = colorScheme === 'dark';
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [activeTab, setActiveTab] = useState<'overview' | 'reviews' | 'nearby'>('overview');
+  const [showTripSelector, setShowTripSelector] = useState(false);
   
   const { addFavorite, removeFavorite, isFavorite } = useFavoritesStore();
   const destination = MOCK_DESTINATIONS[id || '1'];
@@ -275,6 +277,18 @@ export default function DestinationDetailsScreen() {
               <TouchableOpacity
                 className="bg-primary rounded-xl py-4 items-center mb-2"
                 style={{ shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.2, shadowRadius: 4, elevation: 4 }}
+                onPress={() => {
+                  // Navigate to map tab with focus on this destination
+                  router.push({
+                    // @ts-ignore
+                    pathname: '/(tabs)/map',
+                    params: {
+                      focusLat: destination.coordinate.latitude,
+                      focusLon: destination.coordinate.longitude,
+                      destinationId: destination.id,
+                    }
+                  });
+                }}
               >
                 <Text className="text-white text-base font-semibold">{t('open_on_map')}</Text>
               </TouchableOpacity>
@@ -283,6 +297,7 @@ export default function DestinationDetailsScreen() {
                 className={`rounded-xl py-4 items-center border-2 border-primary ${
                   isDark ? 'bg-background-dark' : 'bg-white'
                 }`}
+                onPress={() => setShowTripSelector(true)}
               >
                 <Text className="text-primary text-base font-semibold">{t('add_to_trip')}</Text>
               </TouchableOpacity>
@@ -328,6 +343,19 @@ export default function DestinationDetailsScreen() {
           )}
         </View>
       </ScrollView>
+
+      <TripSelectorModal
+        visible={showTripSelector}
+        onClose={() => setShowTripSelector(false)}
+        destination={{
+          id: destination.id,
+          name: destination.name,
+          location: destination.location,
+          image: destination.images[0],
+          rating: destination.rating,
+          category: destination.category,
+        }}
+      />
     </View>
   );
 }

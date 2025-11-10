@@ -63,6 +63,19 @@ export default function TabsLayout() {
         }} 
       />
       <Tabs.Screen 
+        name="trips" 
+        options={{ 
+          title: t('my_trips'),
+          tabBarIcon: ({ color, focused }) => (
+            <Ionicons 
+              name={focused ? "briefcase" : "briefcase-outline"} 
+              size={24} 
+              color={color} 
+            />
+          ),
+        }} 
+      />
+      <Tabs.Screen 
         name="favorites" 
         options={{ 
           title: t('favorites'),
