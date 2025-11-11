@@ -1,5 +1,5 @@
 import React, { useMemo, useState, useEffect, useRef } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, Animated } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, Animated, TextInput, Image, Modal } from 'react-native';
 import MapView, { Marker, UrlTile, Callout, PROVIDER_DEFAULT, Circle } from 'react-native-maps';
 import Slider from '@react-native-community/slider';
 import { useTranslation } from 'react-i18next';
@@ -9,7 +9,10 @@ import { useLocation, calculateDistance } from '../../hooks/useLocation';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 
-// Mock destinations with coordinates
+// Map style types
+type MapStyle = 'streets' | 'satellite' | 'topo';
+
+// Mock destinations with coordinates and real images
 const MOCK_POINTS = [
   {
     id: 'fortaleza',
@@ -18,6 +21,8 @@ const MOCK_POINTS = [
     coordinate: { latitude: -8.8057, longitude: 13.2343 },
     category: 'historical',
     rating: 4.7,
+    image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/8e/Fortaleza_de_S%C3%A3o_Miguel_de_Luanda.jpg/800px-Fortaleza_de_S%C3%A3o_Miguel_de_Luanda.jpg',
+    location: 'Luanda',
   },
   {
     id: 'tundavala',
@@ -26,6 +31,8 @@ const MOCK_POINTS = [
     coordinate: { latitude: -14.9225, longitude: 13.5053 },
     category: 'natural',
     rating: 4.9,
+    image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/d/d1/Tundavala_gap.jpg/800px-Tundavala_gap.jpg',
+    location: 'Lubango, Huíla',
   },
   {
     id: 'kalandula',
@@ -34,6 +41,8 @@ const MOCK_POINTS = [
     coordinate: { latitude: -9.0686, longitude: 16.0056 },
     category: 'natural',
     rating: 4.8,
+    image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/5f/Quedas_de_Calandula.jpg/800px-Quedas_de_Calandula.jpg',
+    location: 'Malanje',
   },
   {
     id: 'museu',
@@ -42,6 +51,8 @@ const MOCK_POINTS = [
     coordinate: { latitude: -8.8137, longitude: 13.2344 },
     category: 'cultural',
     rating: 4.5,
+    image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a8/Museu_Nacional_de_Antropologia.jpg/800px-Museu_Nacional_de_Antropologia.jpg',
+    location: 'Luanda',
   },
   {
     id: 'kissama',
@@ -50,6 +61,8 @@ const MOCK_POINTS = [
     coordinate: { latitude: -9.1667, longitude: 13.7833 },
     category: 'natural',
     rating: 4.6,
+    image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/3/3c/Kissama_National_Park.jpg/800px-Kissama_National_Park.jpg',
+    location: 'Bengo',
   },
 ];
 
@@ -62,6 +75,9 @@ export default function MapScreen() {
   const [useRadiusFilter, setUseRadiusFilter] = useState<boolean>(false);
   const [radiusKm, setRadiusKm] = useState<number>(100);
   const [showFilters, setShowFilters] = useState<boolean>(true);
+  const [mapStyle, setMapStyle] = useState<MapStyle>('streets');
+  const [searchQuery, setSearchQuery] = useState<string>('');
+  const [selectedPlace, setSelectedPlace] = useState<typeof MOCK_POINTS[0] | null>(null);
   const { location, loading, error } = useLocation();
   const params = useLocalSearchParams();
   const mapRef = useRef<MapView>(null);
@@ -95,6 +111,19 @@ export default function MapScreen() {
     }
   }, [params.focusLat, params.focusLon]);
 
+  // Get MapTiler URL based on style
+  const getMapTileUrl = (style: MapStyle): string => {
+    const apiKey = 'WAR0kpnOyAdsQVF60SWf';
+    switch (style) {
+      case 'satellite':
+        return `https://api.maptiler.com/maps/hybrid/{z}/{x}/{y}.jpg?key=${apiKey}`;
+      case 'topo':
+        return `https://api.maptiler.com/maps/outdoor-v2/{z}/{x}/{y}.png?key=${apiKey}`;
+      default:
+        return `https://api.maptiler.com/maps/streets-v2/{z}/{x}/{y}.png?key=${apiKey}`;
+    }
+  };
+
   const filters = [
     { id: 'all', label: t('all'), icon: 'apps-outline' },
     { id: 'cultural', label: t('cultural'), icon: 'business-outline' },
@@ -107,6 +136,16 @@ export default function MapScreen() {
     let filtered = (activeFilter && activeFilter !== 'all')
       ? MOCK_POINTS.filter(p => p.category === activeFilter) 
       : MOCK_POINTS;
+
+    // Filter by search query
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
+      filtered = filtered.filter(p => 
+        p.title.toLowerCase().includes(query) ||
+        p.description.toLowerCase().includes(query) ||
+        p.location.toLowerCase().includes(query)
+      );
+    }
 
     // Filter by radius only if enabled and user location is available
     if (useRadiusFilter && location && location.coords) {
@@ -122,7 +161,7 @@ export default function MapScreen() {
     }
 
     return filtered;
-  }, [activeFilter, location, radiusKm, useRadiusFilter]);
+  }, [activeFilter, location, radiusKm, useRadiusFilter, searchQuery]);
 
   // Determine initial map region
   const initialRegion = useMemo(() => {
@@ -173,13 +212,92 @@ export default function MapScreen() {
         style={{
           maxHeight: filterHeight.interpolate({
             inputRange: [0, 1],
-            outputRange: [0, 300],
+            outputRange: [0, 400],
           }),
           overflow: 'hidden',
         }}
         className={`border-b ${isDark ? 'border-border-dark bg-background-dark' : 'border-border-light bg-white'}`}
       >
         <View className="px-4 py-3">
+          {/* Search Bar */}
+          <View className={`flex-row items-center mb-3 px-3 py-2 rounded-xl ${isDark ? 'bg-surface-dark' : 'bg-gray-100'}`}>
+            <Ionicons name="search-outline" size={20} color={isDark ? '#9CA3AF' : '#6B7280'} />
+            <TextInput
+              className={`flex-1 ml-2 ${isDark ? 'text-text-dark' : 'text-text-light'}`}
+              placeholder={t('search_placeholder')}
+              placeholderTextColor={isDark ? '#6B7280' : '#9CA3AF'}
+              value={searchQuery}
+              onChangeText={setSearchQuery}
+            />
+            {searchQuery.length > 0 && (
+              <TouchableOpacity onPress={() => setSearchQuery('')}>
+                <Ionicons name="close-circle" size={20} color={isDark ? '#9CA3AF' : '#6B7280'} />
+              </TouchableOpacity>
+            )}
+          </View>
+
+          {/* Map Style Selector */}
+          <View className="mb-3">
+            <Text className={`text-xs font-semibold mb-2 ${isDark ? 'text-text-dark-secondary' : 'text-text-light-secondary'}`}>
+              MAP STYLE
+            </Text>
+            <View className="flex-row gap-2">
+              <TouchableOpacity
+                onPress={() => setMapStyle('streets')}
+                className={`flex-1 px-3 py-2.5 rounded-lg flex-row items-center justify-center ${
+                  mapStyle === 'streets' ? 'bg-primary' : isDark ? 'bg-surface-dark' : 'bg-gray-100'
+                }`}
+              >
+                <Ionicons 
+                  name="map-outline" 
+                  size={16} 
+                  color={mapStyle === 'streets' ? '#fff' : isDark ? '#9CA3AF' : '#6B7280'} 
+                />
+                <Text className={`ml-1.5 text-sm font-medium ${
+                  mapStyle === 'streets' ? 'text-white' : isDark ? 'text-text-dark' : 'text-text-light'
+                }`}>
+                  Streets
+                </Text>
+              </TouchableOpacity>
+              
+              <TouchableOpacity
+                onPress={() => setMapStyle('satellite')}
+                className={`flex-1 px-3 py-2.5 rounded-lg flex-row items-center justify-center ${
+                  mapStyle === 'satellite' ? 'bg-primary' : isDark ? 'bg-surface-dark' : 'bg-gray-100'
+                }`}
+              >
+                <Ionicons 
+                  name="globe-outline" 
+                  size={16} 
+                  color={mapStyle === 'satellite' ? '#fff' : isDark ? '#9CA3AF' : '#6B7280'} 
+                />
+                <Text className={`ml-1.5 text-sm font-medium ${
+                  mapStyle === 'satellite' ? 'text-white' : isDark ? 'text-text-dark' : 'text-text-light'
+                }`}>
+                  Satellite
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                onPress={() => setMapStyle('topo')}
+                className={`flex-1 px-3 py-2.5 rounded-lg flex-row items-center justify-center ${
+                  mapStyle === 'topo' ? 'bg-primary' : isDark ? 'bg-surface-dark' : 'bg-gray-100'
+                }`}
+              >
+                <Ionicons 
+                  name="trending-up-outline" 
+                  size={16} 
+                  color={mapStyle === 'topo' ? '#fff' : isDark ? '#9CA3AF' : '#6B7280'} 
+                />
+                <Text className={`ml-1.5 text-sm font-medium ${
+                  mapStyle === 'topo' ? 'text-white' : isDark ? 'text-text-dark' : 'text-text-light'
+                }`}>
+                  Topo
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+
           {/* Category Filters */}
           <View className="mb-3">
             <Text className={`text-xs font-semibold mb-2 ${isDark ? 'text-text-dark-secondary' : 'text-text-light-secondary'}`}>
@@ -299,7 +417,8 @@ export default function MapScreen() {
         >
           {/* MapTiler tile layer */}
           <UrlTile
-            urlTemplate="https://api.maptiler.com/maps/streets-v2/{z}/{x}/{y}.png?key=WAR0kpnOyAdsQVF60SWf"
+            key={mapStyle}
+            urlTemplate={getMapTileUrl(mapStyle)}
             maximumZ={19}
             flipY={false}
             zIndex={-1}
@@ -325,48 +444,8 @@ export default function MapScreen() {
               key={p.id} 
               coordinate={p.coordinate}
               pinColor={getMarkerColor(p.category)}
-            >
-              <Callout 
-                tooltip={false}
-                onPress={() => {
-                  // @ts-ignore
-                  router.push(`/destination/${p.id}`);
-                }}
-              >
-                <View className={`p-3 rounded-lg ${isDark ? 'bg-surface-dark' : 'bg-white'}`} style={{ width: 220 }}>
-                  <Text className={`font-bold text-base mb-1 ${isDark ? 'text-text-dark' : 'text-text-light'}`}>
-                    {p.title}
-                  </Text>
-                  <Text className={`text-sm mb-2 ${isDark ? 'text-text-dark-secondary' : 'text-text-light-secondary'}`}>
-                    {p.description}
-                  </Text>
-                  <View className="flex-row items-center justify-between">
-                    <View className="flex-row items-center">
-                      <Ionicons name="star" size={14} color="#F59E0B" />
-                      <Text className={`ml-1 text-sm font-semibold ${isDark ? 'text-text-dark' : 'text-text-light'}`}>
-                        {p.rating}
-                      </Text>
-                    </View>
-                    {location?.coords && (
-                      <View className="flex-row items-center">
-                        <Ionicons name="navigate-outline" size={12} color="#136F63" />
-                        <Text className="ml-1 text-xs text-primary font-medium">
-                          {calculateDistance(
-                            location.coords.latitude,
-                            location.coords.longitude,
-                            p.coordinate.latitude,
-                            p.coordinate.longitude
-                          ).toFixed(1)} km
-                        </Text>
-                      </View>
-                    )}
-                  </View>
-                  <Text className="text-xs text-primary mt-2 font-medium">
-                    Tap to view details →
-                  </Text>
-                </View>
-              </Callout>
-            </Marker>
+              onPress={() => setSelectedPlace(p)}
+            />
           ))}
         </MapView>
 
@@ -498,6 +577,141 @@ export default function MapScreen() {
           )}
         </View>
       </View>
+
+      {/* Place Detail Card (Bottom Sheet) */}
+      {selectedPlace && (
+        <View 
+          style={{ 
+            position: 'absolute', 
+            bottom: 0, 
+            left: 0, 
+            right: 0,
+            backgroundColor: isDark ? '#1F2937' : '#fff',
+            borderTopLeftRadius: 24,
+            borderTopRightRadius: 24,
+            paddingHorizontal: 20,
+            paddingTop: 20,
+            paddingBottom: 30,
+            shadowColor: '#000',
+            shadowOffset: { width: 0, height: -4 },
+            shadowOpacity: 0.3,
+            shadowRadius: 8,
+            elevation: 10,
+          }}
+        >
+          {/* Close Button */}
+          <TouchableOpacity
+            onPress={() => setSelectedPlace(null)}
+            style={{
+              position: 'absolute',
+              top: 12,
+              right: 12,
+              backgroundColor: isDark ? '#374151' : '#F3F4F6',
+              borderRadius: 20,
+              width: 32,
+              height: 32,
+              justifyContent: 'center',
+              alignItems: 'center',
+            }}
+          >
+            <Ionicons name="close" size={20} color={isDark ? '#fff' : '#000'} />
+          </TouchableOpacity>
+
+          {/* Place Image */}
+          <Image
+            source={{ uri: selectedPlace.image }}
+            style={{
+              width: '100%',
+              height: 180,
+              borderRadius: 16,
+              marginBottom: 16,
+            }}
+            resizeMode="cover"
+          />
+
+          {/* Place Info */}
+          <View className="flex-row items-start justify-between mb-2">
+            <View className="flex-1 pr-4">
+              <Text className={`text-xl font-bold mb-1 ${isDark ? 'text-text-dark' : 'text-text-light'}`}>
+                {selectedPlace.title}
+              </Text>
+              <View className="flex-row items-center mb-2">
+                <Ionicons name="location-outline" size={14} color="#136F63" />
+                <Text className={`text-sm ml-1 ${isDark ? 'text-text-dark-secondary' : 'text-text-light-secondary'}`}>
+                  {selectedPlace.location}
+                </Text>
+              </View>
+            </View>
+            
+            <View className="bg-primary px-3 py-1.5 rounded-full flex-row items-center">
+              <Ionicons name="star" size={14} color="#fff" />
+              <Text className="text-white font-bold ml-1">
+                {selectedPlace.rating}
+              </Text>
+            </View>
+          </View>
+
+          <Text className={`text-sm mb-4 ${isDark ? 'text-text-dark-secondary' : 'text-text-light-secondary'}`}>
+            {selectedPlace.description}
+          </Text>
+
+          {/* Distance */}
+          {location?.coords && (
+            <View className="flex-row items-center mb-4">
+              <Ionicons name="navigate" size={16} color="#136F63" />
+              <Text className={`text-sm ml-2 font-medium ${isDark ? 'text-text-dark' : 'text-text-light'}`}>
+                {calculateDistance(
+                  location.coords.latitude,
+                  location.coords.longitude,
+                  selectedPlace.coordinate.latitude,
+                  selectedPlace.coordinate.longitude
+                ).toFixed(1)} km away
+              </Text>
+            </View>
+          )}
+
+          {/* Action Buttons */}
+          <View className="flex-row gap-3">
+            <TouchableOpacity
+              onPress={() => {
+                setSelectedPlace(null);
+                // @ts-ignore
+                router.push(`/destination/${selectedPlace.id}`);
+              }}
+              className="flex-1 bg-primary rounded-xl py-3.5 items-center"
+              style={{
+                shadowColor: '#000',
+                shadowOffset: { width: 0, height: 2 },
+                shadowOpacity: 0.2,
+                shadowRadius: 4,
+                elevation: 4,
+              }}
+            >
+              <Text className="text-white font-semibold text-base">
+                View Details
+              </Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              onPress={() => {
+                if (mapRef.current) {
+                  mapRef.current.animateToRegion({
+                    latitude: selectedPlace.coordinate.latitude,
+                    longitude: selectedPlace.coordinate.longitude,
+                    latitudeDelta: 0.05,
+                    longitudeDelta: 0.05,
+                  }, 500);
+                }
+              }}
+              className={`px-5 rounded-xl py-3.5 items-center justify-center ${
+                isDark ? 'bg-surface-dark' : 'bg-gray-100'
+              }`}
+            >
+              <Ionicons name="locate" size={24} color="#136F63" />
+            </TouchableOpacity>
+          </View>
+        </View>
+      )}
     </View>
   );
 }
