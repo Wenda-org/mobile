@@ -355,11 +355,13 @@ export default function DestinationDetailsScreen() {
                   }}
                   scrollEnabled={false}
                   zoomEnabled={false}
+                  mapType="none"
                 >
                   <UrlTile
                     urlTemplate="https://api.maptiler.com/maps/streets-v2/{z}/{x}/{y}.png?key=WAR0kpnOyAdsQVF60SWf"
                     maximumZ={19}
                     flipY={false}
+                    zIndex={1}
                   />
                   <Marker coordinate={destination.coordinate} title={destination.name} />
                 </MapView>

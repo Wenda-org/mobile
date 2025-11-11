@@ -1,5 +1,5 @@
 import React, { useMemo, useState, useEffect, useRef } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, Animated, TextInput, Image, Modal } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, Animated, TextInput, Image, Modal, Linking, Platform } from 'react-native';
 import MapView, { Marker, UrlTile, Callout, PROVIDER_DEFAULT, Circle } from 'react-native-maps';
 import Slider from '@react-native-community/slider';
 import { useTranslation } from 'react-i18next';
@@ -202,6 +202,22 @@ export default function MapScreen() {
       case 'historical': return '#F59E0B';
       case 'adventure': return '#EF4444';
       default: return '#136F63';
+    }
+  };
+
+  // Open route in external maps app
+  const openRoute = (destination: typeof MOCK_POINTS[0], mode: 'walking' | 'driving') => {
+    const { latitude, longitude } = destination.coordinate;
+    const label = encodeURIComponent(destination.title);
+    
+    if (Platform.OS === 'ios') {
+      // Apple Maps
+      const modeParam = mode === 'walking' ? 'w' : 'd';
+      Linking.openURL(`http://maps.apple.com/?daddr=${latitude},${longitude}&dirflg=${modeParam}&q=${label}`);
+    } else {
+      // Google Maps
+      const modeParam = mode === 'walking' ? 'walking' : 'driving';
+      Linking.openURL(`https://www.google.com/maps/dir/?api=1&destination=${latitude},${longitude}&travelmode=${modeParam}`);
     }
   };
 
@@ -414,6 +430,9 @@ export default function MapScreen() {
           showsCompass={true}
           pitchEnabled={true}
           rotateEnabled={true}
+          mapType="none"
+          loadingEnabled={true}
+          loadingBackgroundColor={isDark ? '#1F2937' : '#F3F4F6'}
         >
           {/* MapTiler tile layer */}
           <UrlTile
@@ -421,7 +440,8 @@ export default function MapScreen() {
             urlTemplate={getMapTileUrl(mapStyle)}
             maximumZ={19}
             flipY={false}
-            zIndex={-1}
+            zIndex={1}
+            opacity={1.0}
           />
 
           {/* Radius circle around user (only when filter is active) */}
@@ -669,6 +689,38 @@ export default function MapScreen() {
               </Text>
             </View>
           )}
+
+          {/* Route Options */}
+          <View className="mb-4">
+            <Text className={`text-xs font-semibold mb-2 ${isDark ? 'text-text-dark-secondary' : 'text-text-light-secondary'}`}>
+              GET DIRECTIONS
+            </Text>
+            <View className="flex-row gap-2">
+              <TouchableOpacity
+                onPress={() => openRoute(selectedPlace, 'walking')}
+                className={`flex-1 py-3 rounded-lg flex-row items-center justify-center ${
+                  isDark ? 'bg-surface-dark' : 'bg-gray-100'
+                }`}
+              >
+                <Ionicons name="walk-outline" size={20} color="#136F63" />
+                <Text className={`ml-2 text-sm font-medium ${isDark ? 'text-text-dark' : 'text-text-light'}`}>
+                  Walking
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                onPress={() => openRoute(selectedPlace, 'driving')}
+                className={`flex-1 py-3 rounded-lg flex-row items-center justify-center ${
+                  isDark ? 'bg-surface-dark' : 'bg-gray-100'
+                }`}
+              >
+                <Ionicons name="car-outline" size={20} color="#136F63" />
+                <Text className={`ml-2 text-sm font-medium ${isDark ? 'text-text-dark' : 'text-text-light'}`}>
+                  Driving
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
 
           {/* Action Buttons */}
           <View className="flex-row gap-3">
