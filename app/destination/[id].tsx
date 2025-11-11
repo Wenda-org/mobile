@@ -266,7 +266,7 @@ export default function DestinationDetailsScreen() {
                   zoomEnabled={false}
                 >
                   <UrlTile
-                    urlTemplate="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
+                    urlTemplate="https://api.maptiler.com/maps/streets-v2/{z}/{x}/{y}.png?key=WAR0kpnOyAdsQVF60SWf"
                     maximumZ={19}
                     flipY={false}
                   />
