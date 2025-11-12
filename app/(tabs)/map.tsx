@@ -21,7 +21,7 @@ const MOCK_POINTS = [
     coordinate: { latitude: -8.8057, longitude: 13.2343 },
     category: 'historical',
     rating: 4.7,
-    image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/8e/Fortaleza_de_S%C3%A3o_Miguel_de_Luanda.jpg/800px-Fortaleza_de_S%C3%A3o_Miguel_de_Luanda.jpg',
+    image: 'https://images.unsplash.com/photo-1580974852861-c381510bc98a?w=800&h=600&fit=crop',
     location: 'Luanda',
   },
   {
@@ -31,7 +31,7 @@ const MOCK_POINTS = [
     coordinate: { latitude: -14.9225, longitude: 13.5053 },
     category: 'natural',
     rating: 4.9,
-    image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/d/d1/Tundavala_gap.jpg/800px-Tundavala_gap.jpg',
+    image: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&h=600&fit=crop',
     location: 'Lubango, Huíla',
   },
   {
@@ -41,7 +41,7 @@ const MOCK_POINTS = [
     coordinate: { latitude: -9.0686, longitude: 16.0056 },
     category: 'natural',
     rating: 4.8,
-    image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/5f/Quedas_de_Calandula.jpg/800px-Quedas_de_Calandula.jpg',
+    image: 'https://images.unsplash.com/photo-1432405972618-c60b0225b8f9?w=800&h=600&fit=crop',
     location: 'Malanje',
   },
   {
@@ -51,7 +51,7 @@ const MOCK_POINTS = [
     coordinate: { latitude: -8.8137, longitude: 13.2344 },
     category: 'cultural',
     rating: 4.5,
-    image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a8/Museu_Nacional_de_Antropologia.jpg/800px-Museu_Nacional_de_Antropologia.jpg',
+    image: 'https://images.unsplash.com/photo-1582555172866-f73bb12a2ab3?w=800&h=600&fit=crop',
     location: 'Luanda',
   },
   {
@@ -61,7 +61,7 @@ const MOCK_POINTS = [
     coordinate: { latitude: -9.1667, longitude: 13.7833 },
     category: 'natural',
     rating: 4.6,
-    image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/3/3c/Kissama_National_Park.jpg/800px-Kissama_National_Park.jpg',
+    image: 'https://images.unsplash.com/photo-1493246507139-91e8fad9978e?w=800&h=600&fit=crop',
     location: 'Bengo',
   },
 ];

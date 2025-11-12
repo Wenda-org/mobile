@@ -73,6 +73,8 @@ export default function DestinationCard({ destination, onPress }: DestinationCar
             source={{ uri: destination.image }}
             className="w-full h-full"
             resizeMode="cover"
+            onError={(error) => console.log('Image load error:', destination.name, error.nativeEvent.error)}
+            onLoad={() => console.log('Image loaded:', destination.name)}
           />
         ) : (
           <View className="w-full h-full items-center justify-center bg-primary/10">
