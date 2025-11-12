@@ -4,6 +4,8 @@ import { useTranslation } from 'react-i18next';
 import { useRouter } from 'expo-router';
 import { useColorScheme } from '../../components/useColorScheme';
 import { useAuth } from '../../hooks/useAuth';
+import { useTheme } from '../../contexts/ThemeContext';
+import { Ionicons } from '@expo/vector-icons';
 
 export default function ProfileScreen() {
   const { t, i18n } = useTranslation();
@@ -11,11 +13,16 @@ export default function ProfileScreen() {
   const colorScheme = useColorScheme();
   const isDark = colorScheme === 'dark';
   const { user, logout } = useAuth();
+  const { theme, setTheme } = useTheme();
   const [notificationsEnabled, setNotificationsEnabled] = React.useState(true);
 
   const handleLogout = async () => {
     await logout();
     router.replace('/language');
+  };
+
+  const changeLanguage = (lang: 'en' | 'pt') => {
+    i18n.changeLanguage(lang);
   };
 
   const MenuItem = ({ icon, title, subtitle, onPress, showArrow = true }: any) => (
@@ -27,7 +34,7 @@ export default function ProfileScreen() {
     >
       <View className="flex-row items-center flex-1">
         <View className="w-10 h-10 rounded-full bg-primary/10 items-center justify-center mr-3">
-          <Text className="text-xl">{icon}</Text>
+          <Ionicons name={icon} size={20} color="#136F63" />
         </View>
         <View className="flex-1">
           <Text className={`text-base font-semibold ${isDark ? 'text-text-dark' : 'text-text-light'}`}>
@@ -41,9 +48,7 @@ export default function ProfileScreen() {
         </View>
       </View>
       {showArrow && (
-        <Text className={`text-lg ${isDark ? 'text-text-dark-secondary' : 'text-text-light-secondary'}`}>
-          ›
-        </Text>
+        <Ionicons name="chevron-forward" size={20} color={isDark ? '#9CA3AF' : '#6B7280'} />
       )}
     </TouchableOpacity>
   );
@@ -90,7 +95,7 @@ export default function ProfileScreen() {
               
               {/* Edit Button */}
               <TouchableOpacity className="w-8 h-8 items-center justify-center">
-                <Text className="text-xl">✏️</Text>
+                <Ionicons name="create-outline" size={22} color={isDark ? '#9CA3AF' : '#6B7280'} />
               </TouchableOpacity>
             </View>
           </View>
@@ -104,21 +109,21 @@ export default function ProfileScreen() {
           </Text>
           
           <MenuItem
-            icon="👤"
+            icon="person-outline"
             title="Personal Information"
             subtitle="Update your details"
             onPress={() => console.log('Personal info')}
           />
           
           <MenuItem
-            icon="❤️"
+            icon="heart-outline"
             title={t('preferences')}
             subtitle="Customize your experience"
             onPress={() => console.log('Preferences')}
           />
           
           <MenuItem
-            icon="🗺️"
+            icon="map-outline"
             title={t('my_trips')}
             subtitle="View saved itineraries"
             onPress={() => console.log('My trips')}
@@ -137,7 +142,7 @@ export default function ProfileScreen() {
           >
             <View className="flex-row items-center flex-1">
               <View className="w-10 h-10 rounded-full bg-primary/10 items-center justify-center mr-3">
-                <Text className="text-xl">🔔</Text>
+                <Ionicons name="notifications-outline" size={20} color="#136F63" />
               </View>
               <View className="flex-1">
                 <Text className={`text-base font-semibold ${isDark ? 'text-text-dark' : 'text-text-light'}`}>
@@ -156,11 +161,43 @@ export default function ProfileScreen() {
             />
           </View>
           
+          {/* Theme Switcher */}
+          <TouchableOpacity
+            onPress={() => {
+              // Cycle through themes: light -> dark -> auto -> light
+              if (theme === 'light') setTheme('dark');
+              else if (theme === 'dark') setTheme('auto');
+              else setTheme('light');
+            }}
+            className={`px-4 py-4 flex-row items-center justify-between ${
+              isDark ? 'bg-background-dark-secondary' : 'bg-white'
+            } mb-2 rounded-xl active:opacity-70`}
+          >
+            <View className="flex-row items-center flex-1">
+              <View className="w-10 h-10 rounded-full bg-primary/10 items-center justify-center mr-3">
+                <Ionicons 
+                  name={theme === 'light' ? 'sunny-outline' : theme === 'dark' ? 'moon-outline' : 'sync-outline'} 
+                  size={20} 
+                  color="#136F63" 
+                />
+              </View>
+              <View className="flex-1">
+                <Text className={`text-base font-semibold ${isDark ? 'text-text-dark' : 'text-text-light'}`}>
+                  {t('theme')}
+                </Text>
+                <Text className={`text-sm ${isDark ? 'text-text-dark-secondary' : 'text-text-light-secondary'}`}>
+                  {theme === 'light' ? t('light_mode') : theme === 'dark' ? t('dark_mode') : t('auto_mode')}
+                </Text>
+              </View>
+            </View>
+            <Ionicons name="chevron-forward" size={20} color={isDark ? '#9CA3AF' : '#6B7280'} />
+          </TouchableOpacity>
+          
           <MenuItem
-            icon="🌐"
+            icon="language-outline"
             title={t('language_settings')}
             subtitle={i18n.language === 'en' ? 'English' : 'Português'}
-            onPress={() => router.push('/language')}
+            onPress={() => router.push('/settings/language')}
           />
 
           {/* About Section */}
@@ -169,27 +206,27 @@ export default function ProfileScreen() {
           </Text>
           
           <MenuItem
-            icon="ℹ️"
+            icon="information-circle-outline"
             title={t('about')}
             subtitle="Learn more about Wenda"
             onPress={() => console.log('About')}
           />
           
           <MenuItem
-            icon="📧"
+            icon="mail-outline"
             title={t('contact')}
             subtitle="Get in touch with us"
             onPress={() => console.log('Contact')}
           />
           
           <MenuItem
-            icon="📄"
+            icon="document-text-outline"
             title={t('terms_of_service')}
             onPress={() => console.log('Terms')}
           />
           
           <MenuItem
-            icon="🔒"
+            icon="shield-checkmark-outline"
             title={t('privacy_policy')}
             onPress={() => console.log('Privacy')}
           />

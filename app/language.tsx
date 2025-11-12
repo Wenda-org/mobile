@@ -3,6 +3,7 @@ import { View, Text, TouchableOpacity, Image } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { useColorScheme } from '../components/useColorScheme';
+import { Ionicons } from '@expo/vector-icons';
 
 export default function LanguageScreen() {
   const router = useRouter();
@@ -58,7 +59,7 @@ export default function LanguageScreen() {
           >
             <View className="flex-row items-center">
               <View className="w-12 h-12 rounded-full bg-primary/10 items-center justify-center mr-4">
-                <Text className="text-2xl">🇵🇹</Text>
+                <Text className="text-3xl">🇦🇴</Text>
               </View>
               <View>
                 <Text className={`text-lg font-semibold ${isDark ? 'text-text-dark' : 'text-text-light'}`}>
@@ -100,7 +101,7 @@ export default function LanguageScreen() {
           >
             <View className="flex-row items-center">
               <View className="w-12 h-12 rounded-full bg-primary/10 items-center justify-center mr-4">
-                <Text className="text-2xl">🇺🇸</Text>
+                <Text className="text-3xl">🇬🇧</Text>
               </View>
               <View>
                 <Text className={`text-lg font-semibold ${isDark ? 'text-text-dark' : 'text-text-light'}`}>

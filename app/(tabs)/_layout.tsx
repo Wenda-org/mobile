@@ -13,7 +13,7 @@ export default function TabsLayout() {
   const isDark = colorScheme === 'dark' || nativeColorScheme === 'dark';
 
   return (
-    <View className="flex-1 bg-white dark:bg-gray-800">
+    <View style={{ flex: 1, backgroundColor: isDark ? '#1F2937' : '#FFFFFF' }}>
       <Tabs 
         screenOptions={{ 
           headerShown: false,

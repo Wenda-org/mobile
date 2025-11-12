@@ -3,6 +3,7 @@ import { View, Text, Image, TouchableOpacity } from 'react-native';
 import { useColorScheme } from './useColorScheme';
 import { useRouter } from 'expo-router';
 import { useFavoritesStore } from '../stores/useFavoritesStore';
+import { Ionicons } from '@expo/vector-icons';
 
 export interface Destination {
   id: string;
@@ -75,7 +76,7 @@ export default function DestinationCard({ destination, onPress }: DestinationCar
           />
         ) : (
           <View className="w-full h-full items-center justify-center bg-primary/10">
-            <Text className="text-6xl">📍</Text>
+            <Ionicons name="location" size={80} color="#136F63" />
           </View>
         )}
         
@@ -91,7 +92,11 @@ export default function DestinationCard({ destination, onPress }: DestinationCar
           onPress={handleToggleFavorite}
           className="absolute top-3 right-3 w-10 h-10 bg-white/90 rounded-full items-center justify-center"
         >
-          <Text className="text-lg">{favorited ? '❤️' : '♡'}</Text>
+          <Ionicons 
+            name={favorited ? "heart" : "heart-outline"} 
+            size={20} 
+            color={favorited ? "#EF4444" : "#6B7280"} 
+          />
         </TouchableOpacity>
       </View>
 
@@ -104,8 +109,8 @@ export default function DestinationCard({ destination, onPress }: DestinationCar
 
         {/* Location */}
         <View className="flex-row items-center mb-2">
-          <Text className="text-sm mr-1">📍</Text>
-          <Text className={`text-sm ${isDark ? 'text-text-dark-secondary' : 'text-text-light-secondary'}`}>
+          <Ionicons name="location-outline" size={16} color={isDark ? '#9CA3AF' : '#6B7280'} />
+          <Text className={`text-sm ml-1 ${isDark ? 'text-text-dark-secondary' : 'text-text-light-secondary'}`}>
             {destination.location}
           </Text>
         </View>
@@ -113,8 +118,8 @@ export default function DestinationCard({ destination, onPress }: DestinationCar
         {/* Rating and Distance */}
         <View className="flex-row items-center justify-between">
           <View className="flex-row items-center">
-            <Text className="text-sm mr-1">⭐</Text>
-            <Text className={`text-sm font-semibold ${isDark ? 'text-text-dark' : 'text-text-light'}`}>
+            <Ionicons name="star" size={16} color="#FFD166" />
+            <Text className={`text-sm font-semibold ml-1 ${isDark ? 'text-text-dark' : 'text-text-light'}`}>
               {destination.rating.toFixed(1)}
             </Text>
           </View>

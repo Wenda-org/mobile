@@ -6,6 +6,7 @@ import MapView, { Marker, UrlTile, PROVIDER_DEFAULT } from 'react-native-maps';
 import { useColorScheme } from '../../components/useColorScheme';
 import { useFavoritesStore } from '../../stores/useFavoritesStore';
 import TripSelectorModal from '../../components/TripSelectorModal';
+import { Ionicons } from '@expo/vector-icons';
 
 const { width } = Dimensions.get('window');
 
@@ -214,7 +215,7 @@ export default function DestinationDetailsScreen() {
           className="w-10 h-10 rounded-full bg-white/90 items-center justify-center"
           style={{ shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.2, shadowRadius: 4, elevation: 4 }}
         >
-          <Text className="text-xl">←</Text>
+          <Ionicons name="arrow-back" size={24} color="#000" />
         </TouchableOpacity>
         
         <TouchableOpacity
@@ -222,7 +223,11 @@ export default function DestinationDetailsScreen() {
           className="w-10 h-10 rounded-full bg-white/90 items-center justify-center"
           style={{ shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.2, shadowRadius: 4, elevation: 4 }}
         >
-          <Text className="text-xl">{favorited ? '❤️' : '♡'}</Text>
+          <Ionicons 
+            name={favorited ? "heart" : "heart-outline"} 
+            size={24} 
+            color={favorited ? "#EF4444" : "#6B7280"} 
+          />
         </TouchableOpacity>
       </View>
 
@@ -275,15 +280,15 @@ export default function DestinationDetailsScreen() {
             </Text>
             
             <View className="flex-row items-center mb-2">
-              <Text className="text-base mr-1">📍</Text>
-              <Text className={`text-base ${isDark ? 'text-text-dark-secondary' : 'text-text-light-secondary'}`}>
+              <Ionicons name="location-outline" size={18} color={isDark ? '#9CA3AF' : '#6B7280'} />
+              <Text className={`text-base ml-1 ${isDark ? 'text-text-dark-secondary' : 'text-text-light-secondary'}`}>
                 {destination.location}
               </Text>
             </View>
 
             <View className="flex-row items-center">
-              <Text className="text-base mr-1">⭐</Text>
-              <Text className={`text-base font-semibold mr-1 ${isDark ? 'text-text-dark' : 'text-text-light'}`}>
+              <Ionicons name="star" size={18} color="#FFD166" />
+              <Text className={`text-base font-semibold ml-1 mr-1 ${isDark ? 'text-text-dark' : 'text-text-light'}`}>
                 {destination.rating.toFixed(1)}
               </Text>
               <Text className={`text-sm ${isDark ? 'text-text-dark-secondary' : 'text-text-light-secondary'}`}>
@@ -409,8 +414,8 @@ export default function DestinationDetailsScreen() {
                       {review.author}
                     </Text>
                     <View className="flex-row items-center">
-                      <Text className="text-sm mr-1">⭐</Text>
-                      <Text className={`text-sm font-semibold ${isDark ? 'text-text-dark' : 'text-text-light'}`}>
+                      <Ionicons name="star" size={14} color="#FFD166" />
+                      <Text className={`text-sm font-semibold ml-1 ${isDark ? 'text-text-dark' : 'text-text-light'}`}>
                         {review.rating}
                       </Text>
                     </View>

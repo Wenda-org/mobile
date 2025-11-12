@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { useColorScheme } from '../../components/useColorScheme';
 import DestinationCard from '../../components/DestinationCard';
 import { useFavoritesStore } from '../../stores/useFavoritesStore';
+import { Ionicons } from '@expo/vector-icons';
 
 export default function FavoritesScreen() {
   const { t } = useTranslation();
@@ -32,8 +33,8 @@ export default function FavoritesScreen() {
       {favorites.length === 0 ? (
         /* Empty State */
         <View className="flex-1 items-center justify-center px-8">
-          <Text className="text-6xl mb-4">♡</Text>
-          <Text className={`text-xl font-bold mb-2 text-center ${isDark ? 'text-text-dark' : 'text-text-light'}`}>
+          <Ionicons name="heart-outline" size={80} color={isDark ? '#9CA3AF' : '#6B7280'} />
+          <Text className={`text-xl font-bold mb-2 mt-4 text-center ${isDark ? 'text-text-dark' : 'text-text-light'}`}>
             No favorites yet
           </Text>
           <Text className={`text-sm text-center ${isDark ? 'text-text-dark-secondary' : 'text-text-light-secondary'}`}>

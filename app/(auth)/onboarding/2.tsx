@@ -3,6 +3,7 @@ import { View, Text, TouchableOpacity } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { useColorScheme } from '../../../components/useColorScheme';
+import { Ionicons } from '@expo/vector-icons';
 
 export default function Onboarding2() {
   const router = useRouter();
@@ -20,7 +21,7 @@ export default function Onboarding2() {
         <View className="flex-1 justify-center items-center">
           {/* Illustration */}
           <View className="w-64 h-64 rounded-full bg-success/10 items-center justify-center mb-12">
-            <Text className="text-8xl">�️</Text>
+            <Ionicons name="calendar" size={120} color="#10b981" />
           </View>
 
           {/* Title */}
