@@ -2,15 +2,14 @@ import { Tabs } from "expo-router";
 import { useTranslation } from 'react-i18next';
 import { Ionicons } from '@expo/vector-icons';
 import { useColorScheme } from '../../components/useColorScheme';
-import { View, useColorScheme as useNativeColorScheme } from 'react-native';
+import { View } from 'react-native';
 import '../../global.css';
 import '../../i18n';
 
 export default function TabsLayout() {
   const { t } = useTranslation();
   const colorScheme = useColorScheme();
-  const nativeColorScheme = useNativeColorScheme();
-  const isDark = colorScheme === 'dark' || nativeColorScheme === 'dark';
+  const isDark = colorScheme === 'dark';
 
   return (
     <View style={{ flex: 1, backgroundColor: isDark ? '#1F2937' : '#FFFFFF' }}>
