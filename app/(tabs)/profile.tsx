@@ -2,7 +2,6 @@ import React from 'react';
 import { View, Text, ScrollView, TouchableOpacity, Switch } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { useRouter } from 'expo-router';
-import { useColorScheme } from '../../components/useColorScheme';
 import { useAuth } from '../../hooks/useAuth';
 import { useTheme } from '../../contexts/ThemeContext';
 import { Ionicons } from '@expo/vector-icons';
@@ -10,10 +9,9 @@ import { Ionicons } from '@expo/vector-icons';
 export default function ProfileScreen() {
   const { t, i18n } = useTranslation();
   const router = useRouter();
-  const colorScheme = useColorScheme();
+  const { theme, colorScheme, setTheme } = useTheme();
   const isDark = colorScheme === 'dark';
   const { user, logout } = useAuth();
-  const { theme, setTheme } = useTheme();
   const [notificationsEnabled, setNotificationsEnabled] = React.useState(true);
 
   const handleLogout = async () => {
@@ -165,9 +163,17 @@ export default function ProfileScreen() {
           <TouchableOpacity
             onPress={() => {
               // Cycle through themes: light -> dark -> auto -> light
-              if (theme === 'light') setTheme('dark');
-              else if (theme === 'dark') setTheme('auto');
-              else setTheme('light');
+              console.log('Current theme:', theme);
+              if (theme === 'light') {
+                console.log('Changing to dark');
+                setTheme('dark');
+              } else if (theme === 'dark') {
+                console.log('Changing to auto');
+                setTheme('auto');
+              } else {
+                console.log('Changing to light');
+                setTheme('light');
+              }
             }}
             className={`px-4 py-4 flex-row items-center justify-between ${
               isDark ? 'bg-background-dark-secondary' : 'bg-white'

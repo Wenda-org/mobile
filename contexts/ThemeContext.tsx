@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useColorScheme as useRNColorScheme } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 type Theme = 'light' | 'dark' | 'auto';
 type ColorScheme = 'light' | 'dark';
@@ -13,9 +14,39 @@ interface ThemeContextType {
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
+const THEME_STORAGE_KEY = '@wenda_theme';
+
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const systemColorScheme = useRNColorScheme();
-  const [theme, setTheme] = useState<Theme>('auto');
+  const [theme, setThemeState] = useState<Theme>('auto');
+  const [isLoading, setIsLoading] = useState(true);
+  
+  // Load theme from storage on mount
+  useEffect(() => {
+    loadTheme();
+  }, []);
+
+  const loadTheme = async () => {
+    try {
+      const savedTheme = await AsyncStorage.getItem(THEME_STORAGE_KEY);
+      if (savedTheme && (savedTheme === 'light' || savedTheme === 'dark' || savedTheme === 'auto')) {
+        setThemeState(savedTheme as Theme);
+      }
+    } catch (error) {
+      console.error('Error loading theme:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const setTheme = async (newTheme: Theme) => {
+    try {
+      setThemeState(newTheme);
+      await AsyncStorage.setItem(THEME_STORAGE_KEY, newTheme);
+    } catch (error) {
+      console.error('Error saving theme:', error);
+    }
+  };
   
   const colorScheme: ColorScheme = 
     theme === 'auto' 
@@ -23,12 +54,14 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
       : theme;
 
   const toggleTheme = () => {
-    setTheme(prev => {
-      if (prev === 'light') return 'dark';
-      if (prev === 'dark') return 'light';
-      return 'light'; // from auto
-    });
+    const newTheme = theme === 'light' ? 'dark' : theme === 'dark' ? 'auto' : 'light';
+    setTheme(newTheme);
   };
+
+  // Don't render children until theme is loaded
+  if (isLoading) {
+    return null;
+  }
 
   return (
     <ThemeContext.Provider value={{ theme, colorScheme, setTheme, toggleTheme }}>

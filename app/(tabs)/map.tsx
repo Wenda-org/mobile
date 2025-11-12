@@ -76,12 +76,19 @@ export default function MapScreen() {
   const [radiusKm, setRadiusKm] = useState<number>(100);
   const [showFilters, setShowFilters] = useState<boolean>(true);
   const [mapStyle, setMapStyle] = useState<MapStyle>('streets');
+  const [mapKey, setMapKey] = useState<number>(0);
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [selectedPlace, setSelectedPlace] = useState<typeof MOCK_POINTS[0] | null>(null);
   const { location, loading, error } = useLocation();
   const params = useLocalSearchParams();
   const mapRef = useRef<MapView>(null);
   const filterHeight = useRef(new Animated.Value(1)).current;
+
+  // Force map re-render when style changes
+  const changeMapStyle = (newStyle: MapStyle) => {
+    setMapStyle(newStyle);
+    setMapKey(prev => prev + 1);
+  };
 
   // Toggle filter panel animation
   const toggleFilters = () => {
@@ -111,18 +118,18 @@ export default function MapScreen() {
     }
   }, [params.focusLat, params.focusLon]);
 
-  // Get MapTiler URL based on style
-  const getMapTileUrl = (style: MapStyle): string => {
+  // Get MapTiler URL based on style - memoized to prevent unnecessary re-renders
+  const tileUrl = useMemo(() => {
     const apiKey = 'WAR0kpnOyAdsQVF60SWf';
-    switch (style) {
+    switch (mapStyle) {
       case 'satellite':
-        return `https://api.maptiler.com/maps/hybrid/{z}/{x}/{y}.jpg?key=${apiKey}`;
+        return `https://api.maptiler.com/tiles/satellite-v2/{z}/{x}/{y}.jpg?key=${apiKey}`;
       case 'topo':
-        return `https://api.maptiler.com/maps/outdoor-v2/{z}/{x}/{y}.png?key=${apiKey}`;
+        return `https://api.maptiler.com/maps/topo-v2/{z}/{x}/{y}.png?key=${apiKey}`;
       default:
         return `https://api.maptiler.com/maps/streets-v2/{z}/{x}/{y}.png?key=${apiKey}`;
     }
-  };
+  }, [mapStyle]);
 
   const filters = [
     { id: 'all', label: t('all'), icon: 'apps-outline' },
@@ -259,7 +266,7 @@ export default function MapScreen() {
             </Text>
             <View className="flex-row gap-2">
               <TouchableOpacity
-                onPress={() => setMapStyle('streets')}
+                onPress={() => changeMapStyle('streets')}
                 className={`flex-1 px-3 py-2.5 rounded-lg flex-row items-center justify-center ${
                   mapStyle === 'streets' ? 'bg-primary' : isDark ? 'bg-surface-dark' : 'bg-gray-100'
                 }`}
@@ -277,7 +284,7 @@ export default function MapScreen() {
               </TouchableOpacity>
               
               <TouchableOpacity
-                onPress={() => setMapStyle('satellite')}
+                onPress={() => changeMapStyle('satellite')}
                 className={`flex-1 px-3 py-2.5 rounded-lg flex-row items-center justify-center ${
                   mapStyle === 'satellite' ? 'bg-primary' : isDark ? 'bg-surface-dark' : 'bg-gray-100'
                 }`}
@@ -295,7 +302,7 @@ export default function MapScreen() {
               </TouchableOpacity>
 
               <TouchableOpacity
-                onPress={() => setMapStyle('topo')}
+                onPress={() => changeMapStyle('topo')}
                 className={`flex-1 px-3 py-2.5 rounded-lg flex-row items-center justify-center ${
                   mapStyle === 'topo' ? 'bg-primary' : isDark ? 'bg-surface-dark' : 'bg-gray-100'
                 }`}
@@ -431,17 +438,20 @@ export default function MapScreen() {
           pitchEnabled={true}
           rotateEnabled={true}
           mapType="none"
-          loadingEnabled={true}
+          loadingEnabled={false}
           loadingBackgroundColor={isDark ? '#1F2937' : '#F3F4F6'}
+          maxZoomLevel={19}
+          minZoomLevel={3}
+          key={mapKey}
         >
           {/* MapTiler tile layer */}
           <UrlTile
-            key={mapStyle}
-            urlTemplate={getMapTileUrl(mapStyle)}
+            urlTemplate={tileUrl}
             maximumZ={19}
+            minimumZ={0}
             flipY={false}
-            zIndex={1}
-            opacity={1.0}
+            zIndex={-1}
+            tileSize={256}
           />
 
           {/* Radius circle around user (only when filter is active) */}
