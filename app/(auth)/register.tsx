@@ -322,8 +322,8 @@ export default function Register() {
                 elevation: 2,
               }}
             >
-              <Text className="text-2xl mr-3">🔵</Text>
-              <Text className={`text-base font-semibold ${isDark ? 'text-text-dark' : 'text-text-light'}`}>
+              <Ionicons name="logo-google" size={20} color="#DB4437" />
+              <Text className={`text-base font-semibold ml-3 ${isDark ? 'text-text-dark' : 'text-text-light'}`}>
                 {t('sign_in_with_google')}
               </Text>
             </TouchableOpacity>

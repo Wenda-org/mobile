@@ -4,6 +4,7 @@ import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { useColorScheme } from '../../components/useColorScheme';
 import { useAuth } from '../../hooks/useAuth';
+import { Ionicons } from '@expo/vector-icons';
 
 export default function Login() {
   const router = useRouter();
@@ -177,19 +178,28 @@ export default function Login() {
               elevation: 2,
             }}
           >
-            <Text className="text-2xl mr-3">🔵</Text>
-            <Text className={`text-base font-semibold ${isDark ? 'text-text-dark' : 'text-text-light'}`}>
+            <Ionicons name="logo-google" size={20} color="#DB4437" className="mr-3" />
+            <Text className={`text-base font-semibold ml-3 ${isDark ? 'text-text-dark' : 'text-text-light'}`}>
               {t('sign_in_with_google')}
             </Text>
           </TouchableOpacity>
 
           {/* Sign Up Link */}
-          <View className="flex-row justify-center">
+          <View className="flex-row justify-center mb-4">
             <Text className={`text-base ${isDark ? 'text-text-dark-secondary' : 'text-text-light-secondary'}`}>
               {t('dont_have_account')}{' '}
             </Text>
             <TouchableOpacity onPress={() => router.push('/(auth)/register')}>
               <Text className="text-primary text-base font-semibold">{t('sign_up')}</Text>
+            </TouchableOpacity>
+          </View>
+
+          {/* Tutorial Link */}
+          <View className="flex-row justify-center">
+            <TouchableOpacity onPress={() => router.push('/(auth)/onboarding/0')}>
+              <Text className={`text-sm ${isDark ? 'text-text-dark-secondary' : 'text-text-light-secondary'}`}>
+                🎓 Ver tutorial
+              </Text>
             </TouchableOpacity>
           </View>
         </View>
