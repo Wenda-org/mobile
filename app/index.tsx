@@ -14,8 +14,8 @@ export default function SplashScreen() {
       // TODO: Check if user is authenticated
       // If authenticated, go to /(tabs)
       // If not, go to /language
-      // router.replace('/language');
-      router.replace('/(tabs)');
+      router.replace('/language');
+      // router.replace('/(tabs)');
     }, 1500);
     
     return () => clearTimeout(timeout);
