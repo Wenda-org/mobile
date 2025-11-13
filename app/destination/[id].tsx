@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { View, Text, ScrollView, Image, TouchableOpacity, Dimensions } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
@@ -7,167 +7,9 @@ import { useColorScheme } from '../../components/useColorScheme';
 import { useFavoritesStore } from '../../stores/useFavoritesStore';
 import TripSelectorModal from '../../components/TripSelectorModal';
 import { Ionicons } from '@expo/vector-icons';
+import { MOCK_DESTINATIONS } from '../../data/mockDestinations';
 
 const { width } = Dimensions.get('window');
-
-// Mock destination data (in real app, fetch from API)
-const MOCK_DESTINATIONS: Record<string, any> = {
-  '1': {
-    id: '1',
-    name: 'Fortaleza de São Miguel',
-    location: 'Luanda',
-    coordinate: { latitude: -8.8057, longitude: 13.2343 },
-    images: [
-      'https://upload.wikimedia.org/wikipedia/commons/thumb/8/8e/Fortaleza_de_S%C3%A3o_Miguel_de_Luanda.jpg/800px-Fortaleza_de_S%C3%A3o_Miguel_de_Luanda.jpg',
-      'https://upload.wikimedia.org/wikipedia/commons/thumb/2/2f/S%C3%A3o_Miguel_Fort.jpg/800px-S%C3%A3o_Miguel_Fort.jpg',
-      'https://upload.wikimedia.org/wikipedia/commons/thumb/5/5a/Luanda_Bay.jpg/800px-Luanda_Bay.jpg',
-    ],
-    rating: 4.5,
-    reviewCount: 342,
-    category: 'Historical',
-    description: 'The Fortress of São Miguel is a historic Portuguese fortress located in Luanda, Angola. Built in 1576, it offers stunning views of the city and harbor. This iconic landmark showcases colonial architecture and houses the Museum of the Armed Forces.',
-    openingHours: 'Mon-Sat: 9:00 AM - 5:00 PM',
-    ticketPrice: '500 Kz',
-    reviews: [
-      { id: 'r1', author: 'Maria Silva', rating: 5, text: 'Amazing historical site! The views are breathtaking.', date: '2025-10-15' },
-      { id: 'r2', author: 'João Santos', rating: 4, text: 'Great place to learn about Angolan history.', date: '2025-10-10' },
-      { id: 'r3', author: 'Ana Costa', rating: 5, text: 'Must-visit when in Luanda. Very well preserved.', date: '2025-10-05' },
-    ],
-  },
-  '2': {
-    id: '2',
-    name: 'Tundavala Gap',
-    location: 'Lubango',
-    coordinate: { latitude: -14.9225, longitude: 13.5053 },
-    images: [
-      'https://upload.wikimedia.org/wikipedia/commons/thumb/d/d1/Tundavala_gap.jpg/800px-Tundavala_gap.jpg',
-      'https://upload.wikimedia.org/wikipedia/commons/thumb/0/0d/Lubango_landscape.jpg/800px-Lubango_landscape.jpg',
-    ],
-    rating: 4.8,
-    reviewCount: 256,
-    category: 'Natural',
-    description: 'Tundavala Gap is a spectacular viewpoint near Lubango offering panoramic views of the surrounding landscape. The dramatic cliff drops 1000 meters, providing one of Angola\'s most stunning natural vistas. Perfect for photography and nature lovers.',
-    openingHours: 'Open 24/7',
-    ticketPrice: 'Free',
-    reviews: [
-      { id: 'r4', author: 'Pedro Lopes', rating: 5, text: 'Absolutely stunning! One of the best viewpoints I\'ve ever seen.', date: '2025-10-20' },
-      { id: 'r5', author: 'Sofia Martins', rating: 5, text: 'Words cannot describe the beauty. A must-see!', date: '2025-10-18' },
-    ],
-  },
-  '3': {
-    id: '3',
-    name: 'Kalandula Falls',
-    location: 'Malanje',
-    coordinate: { latitude: -9.0686, longitude: 16.0056 },
-    images: [
-      'https://upload.wikimedia.org/wikipedia/commons/thumb/5/5f/Quedas_de_Calandula.jpg/800px-Quedas_de_Calandula.jpg',
-      'https://upload.wikimedia.org/wikipedia/commons/thumb/8/89/Kalandula_waterfalls.jpg/800px-Kalandula_waterfalls.jpg',
-      'https://upload.wikimedia.org/wikipedia/commons/thumb/6/6c/Angola_waterfall.jpg/800px-Angola_waterfall.jpg',
-    ],
-    rating: 4.9,
-    reviewCount: 512,
-    category: 'Natural',
-    description: 'Kalandula Falls is one of the largest waterfalls in Africa, with a height of 105 meters and width of 400 meters. Located on the Lucala River, it\'s a spectacular natural wonder and a major tourist attraction in Angola.',
-    openingHours: 'Daily: 8:00 AM - 6:00 PM',
-    ticketPrice: '1000 Kz',
-    reviews: [
-      { id: 'r6', author: 'Carlos Mendes', rating: 5, text: 'Magnificent! The power and beauty of nature at its best.', date: '2025-10-22' },
-      { id: 'r7', author: 'Lucia Fernandes', rating: 5, text: 'Worth the journey. Absolutely breathtaking!', date: '2025-10-21' },
-      { id: 'r8', author: 'Miguel Oliveira', rating: 4, text: 'Amazing falls. Bring a camera!', date: '2025-10-19' },
-    ],
-  },
-  'fortaleza': {
-    id: 'fortaleza',
-    name: 'Fortaleza de São Miguel',
-    location: 'Luanda',
-    coordinate: { latitude: -8.8057, longitude: 13.2343 },
-    images: [
-      'https://upload.wikimedia.org/wikipedia/commons/thumb/8/8e/Fortaleza_de_S%C3%A3o_Miguel_de_Luanda.jpg/800px-Fortaleza_de_S%C3%A3o_Miguel_de_Luanda.jpg',
-      'https://upload.wikimedia.org/wikipedia/commons/thumb/2/2f/S%C3%A3o_Miguel_Fort.jpg/800px-S%C3%A3o_Miguel_Fort.jpg',
-    ],
-    rating: 4.7,
-    reviewCount: 342,
-    category: 'historical',
-    description: 'Historic fortress with city views. Built in 1576, it offers stunning views of the city and harbor.',
-    openingHours: 'Mon-Sat: 9:00 AM - 5:00 PM',
-    ticketPrice: '500 Kz',
-    reviews: [
-      { id: 'r1', author: 'Maria Silva', rating: 5, text: 'Amazing historical site!', date: '2025-10-15' },
-    ],
-  },
-  'tundavala': {
-    id: 'tundavala',
-    name: 'Tundavala Gap',
-    location: 'Lubango, Huíla',
-    coordinate: { latitude: -14.9225, longitude: 13.5053 },
-    images: [
-      'https://upload.wikimedia.org/wikipedia/commons/thumb/d/d1/Tundavala_gap.jpg/800px-Tundavala_gap.jpg',
-    ],
-    rating: 4.9,
-    reviewCount: 256,
-    category: 'natural',
-    description: 'Stunning viewpoint near Lubango with dramatic cliff drops 1000 meters.',
-    openingHours: 'Open 24/7',
-    ticketPrice: 'Free',
-    reviews: [
-      { id: 'r4', author: 'Pedro Lopes', rating: 5, text: 'Absolutely stunning!', date: '2025-10-20' },
-    ],
-  },
-  'kalandula': {
-    id: 'kalandula',
-    name: 'Kalandula Falls',
-    location: 'Malanje',
-    coordinate: { latitude: -9.0686, longitude: 16.0056 },
-    images: [
-      'https://upload.wikimedia.org/wikipedia/commons/thumb/5/5f/Quedas_de_Calandula.jpg/800px-Quedas_de_Calandula.jpg',
-    ],
-    rating: 4.8,
-    reviewCount: 512,
-    category: 'natural',
-    description: 'One of Africa\'s largest waterfalls. Height of 105 meters and width of 400 meters.',
-    openingHours: 'Daily: 8:00 AM - 6:00 PM',
-    ticketPrice: '1000 Kz',
-    reviews: [
-      { id: 'r6', author: 'Carlos Mendes', rating: 5, text: 'Magnificent!', date: '2025-10-22' },
-    ],
-  },
-  'museu': {
-    id: 'museu',
-    name: 'Museu Nacional de Antropologia',
-    location: 'Luanda',
-    coordinate: { latitude: -8.8137, longitude: 13.2344 },
-    images: [
-      'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a8/Museu_Nacional_de_Antropologia.jpg/800px-Museu_Nacional_de_Antropologia.jpg',
-    ],
-    rating: 4.5,
-    reviewCount: 178,
-    category: 'cultural',
-    description: 'Cultural museum in Luanda showcasing Angolan anthropology and heritage.',
-    openingHours: 'Tue-Sun: 10:00 AM - 6:00 PM',
-    ticketPrice: '300 Kz',
-    reviews: [
-      { id: 'r9', author: 'Isabel Ramos', rating: 4, text: 'Great cultural experience!', date: '2025-10-12' },
-    ],
-  },
-  'kissama': {
-    id: 'kissama',
-    name: 'Kissama National Park',
-    location: 'Bengo',
-    coordinate: { latitude: -9.1667, longitude: 13.7833 },
-    images: [
-      'https://upload.wikimedia.org/wikipedia/commons/thumb/3/3c/Kissama_National_Park.jpg/800px-Kissama_National_Park.jpg',
-    ],
-    rating: 4.6,
-    reviewCount: 289,
-    category: 'natural',
-    description: 'Wildlife safari and nature reserve. Home to elephants, giraffes, and many other species.',
-    openingHours: 'Daily: 6:00 AM - 6:00 PM',
-    ticketPrice: '2000 Kz',
-    reviews: [
-      { id: 'r10', author: 'Ricardo Alves', rating: 5, text: 'Amazing wildlife!', date: '2025-10-08' },
-    ],
-  },
-};
 
 export default function DestinationDetailsScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -180,7 +22,47 @@ export default function DestinationDetailsScreen() {
   const [showTripSelector, setShowTripSelector] = useState(false);
   
   const { addFavorite, removeFavorite, isFavorite } = useFavoritesStore();
-  const destination = MOCK_DESTINATIONS[id || '1'];
+
+  // Buscar destino pelos dados mockados
+  const destination = useMemo(() => {
+    const dest = MOCK_DESTINATIONS.find(d => String(d.id) === id);
+    if (!dest) return null;
+
+    // Converter para o formato esperado pela tela
+    return {
+      id: String(dest.id),
+      name: dest.name,
+      location: `${dest.location}, ${dest.province}`,
+      coordinate: {
+        latitude: dest.latitude,
+        longitude: dest.longitude,
+      },
+      images: dest.images.map(img => img.url),
+      rating: dest.rating,
+      reviewCount: dest.reviewCount,
+      category: dest.category.name,
+      description: dest.description,
+      openingHours: 'Aberto diariamente',
+      ticketPrice: dest.isFeatured ? '1000 Kz' : 'Grátis',
+      reviews: [
+        { 
+          id: 'r1', 
+          author: 'Maria Silva', 
+          rating: 5, 
+          text: 'Lugar incrível! Recomendo muito.', 
+          date: '2025-11-10' 
+        },
+        { 
+          id: 'r2', 
+          author: 'João Santos', 
+          rating: dest.rating >= 4.5 ? 5 : 4, 
+          text: 'Uma experiência maravilhosa. Vale muito a pena visitar.', 
+          date: '2025-11-08' 
+        },
+      ],
+    };
+  }, [id]);
+
   const favorited = isFavorite(destination?.id || '');
 
   if (!destination) {

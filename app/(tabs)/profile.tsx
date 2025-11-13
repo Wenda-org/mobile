@@ -5,6 +5,8 @@ import { useRouter } from 'expo-router';
 import { useAuth } from '../../hooks/useAuth';
 import { useTheme } from '../../contexts/ThemeContext';
 import { Ionicons } from '@expo/vector-icons';
+import { PreferencesCard } from '../../components/PreferencesCard';
+import { TravelPreferences } from '../../types/preferences.types';
 
 export default function ProfileScreen() {
   const { t, i18n } = useTranslation();
@@ -99,6 +101,15 @@ export default function ProfileScreen() {
           </View>
         </View>
 
+        {/* Preferences Card */}
+        <View className="px-4 mb-6">
+          <PreferencesCard
+            preferences={user?.preferences as TravelPreferences}
+            isDark={isDark}
+            onEdit={() => router.push('/edit-preferences')}
+          />
+        </View>
+
         {/* Menu Sections */}
         <View className="px-4">
           {/* Account Section */}
@@ -111,13 +122,6 @@ export default function ProfileScreen() {
             title="Personal Information"
             subtitle="Update your details"
             onPress={() => console.log('Personal info')}
-          />
-          
-          <MenuItem
-            icon="heart-outline"
-            title={t('preferences')}
-            subtitle="Customize your experience"
-            onPress={() => console.log('Preferences')}
           />
           
           <MenuItem
@@ -210,6 +214,16 @@ export default function ProfileScreen() {
           <Text className={`text-sm font-semibold mb-2 mt-6 px-2 ${isDark ? 'text-text-dark-secondary' : 'text-text-light-secondary'}`}>
             ABOUT
           </Text>
+          
+          {/* Test Button (only in dev) */}
+          {__DEV__ && (
+            <MenuItem
+              icon="flask-outline"
+              title="🧪 Test Preferences API"
+              subtitle="Debug & test preferences"
+              onPress={() => router.push('/test-preferences')}
+            />
+          )}
           
           <MenuItem
             icon="information-circle-outline"

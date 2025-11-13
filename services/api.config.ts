@@ -3,6 +3,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // Core API Configuration (Backend principal)
 export const coreApi = axios.create({
+//   baseURL: 'http://192.168.100.220:3000/api',
   baseURL: 'https://backend-core-v42h.onrender.com/api',
   headers: {
     'Content-Type': 'application/json',
@@ -27,6 +28,14 @@ coreApi.interceptors.request.use(
       if (token) {
         config.headers.Authorization = `Bearer ${token}`;
       }
+      
+      // Log da requisição em desenvolvimento
+      if (__DEV__) {
+        console.log(`[Core API] ${config.method?.toUpperCase()} ${config.baseURL}${config.url}`);
+        if (config.data) {
+          console.log('[Core API] Request data:', JSON.stringify(config.data, null, 2));
+        }
+      }
     } catch (error) {
       console.error('Erro ao obter token:', error);
     }
@@ -39,8 +48,19 @@ coreApi.interceptors.request.use(
 
 // Interceptor para tratar erros de resposta do Core API
 coreApi.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    if (__DEV__) {
+      console.log(`[Core API] Response ${response.status}:`, response.data);
+    }
+    return response;
+  },
   async (error) => {
+    if (__DEV__) {
+      console.error('[Core API] Error:', error.message);
+      console.error('[Core API] Error response:', error.response?.data);
+      console.error('[Core API] Error status:', error.response?.status);
+    }
+    
     if (error.response?.status === 401) {
       // Token inválido ou expirado - fazer logout
       await AsyncStorage.removeItem('@wenda_access_token');

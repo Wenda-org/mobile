@@ -121,34 +121,69 @@ export function useAuth() {
     }
   };
 
-  const updateProfile = async (data: { name?: string; phone?: string; avatarUrl?: string }) => {
+  const updateProfile = async (data: { 
+    name?: string; 
+    phone?: string; 
+    avatarUrl?: string;
+    preferences?: Record<string, any>;
+  }) => {
     try {
       setIsLoading(true);
       setError(null);
 
-      const response = await authService.updateProfile(data);
-
-      if (response.success && response.data) {
-        // Atualizar usuário localmente
-        await AsyncStorage.setItem('@wenda_user', JSON.stringify(response.data));
-        setContextUser(response.data);
-        
-        return { 
-          success: true, 
-          user: response.data 
-        };
-      } else {
-        const errorMessage = response.message || 'Erro ao atualizar perfil';
-        setError(errorMessage);
-        return { 
-          success: false, 
-          error: errorMessage 
+      console.log('[useAuth] Updating profile with data (MOCKED):', JSON.stringify(data, null, 2));
+      
+      // MOCKADO: Atualizar apenas localmente
+      const currentUser = contextUser;
+      if (!currentUser) {
+        return {
+          success: false,
+          error: 'Usuário não autenticado'
         };
       }
+
+      const updatedUser = {
+        ...currentUser,
+        ...data,
+        // Mesclar preferências se fornecidas
+        ...(data.preferences && {
+          preferences: {
+            ...(currentUser.preferences || {}),
+            ...data.preferences,
+          }
+        })
+      };
+
+      // Salvar no AsyncStorage
+      await AsyncStorage.setItem('@wenda_user', JSON.stringify(updatedUser));
+      setContextUser(updatedUser);
+      
+      console.log('[useAuth] Profile updated locally (MOCKED):', updatedUser);
+      
+      return { 
+        success: true, 
+        user: updatedUser 
+      };
+
+      // VERSÃO ORIGINAL (desabilitada):
+      // const response = await authService.updateProfile(data);
+      // console.log('[useAuth] Update profile response:', response);
+      //
+      // if (response.success && response.data) {
+      //   await AsyncStorage.setItem('@wenda_user', JSON.stringify(response.data));
+      //   setContextUser(response.data);
+      //   return { success: true, user: response.data };
+      // } else {
+      //   const errorMessage = response.message || 'Erro ao atualizar perfil';
+      //   setError(errorMessage);
+      //   console.error('[useAuth] Update failed:', errorMessage);
+      //   return { success: false, error: errorMessage };
+      // }
     } catch (error: any) {
-      const errorMessage = error.response?.data?.message || error.message || 'Erro ao atualizar perfil';
+      const errorMessage = error.message || 'Erro ao atualizar perfil';
       setError(errorMessage);
-      console.error('Update profile error:', error);
+      console.error('[useAuth] Update profile error (MOCKED):', error);
+      console.error('[useAuth] Error status:', error.response?.status);
       return { 
         success: false, 
         error: errorMessage 

@@ -109,11 +109,11 @@ export default function Register() {
       if (result.success) {
         Alert.alert(
           'Conta criada!',
-          'Sua conta foi criada com sucesso. Bem-vindo ao Wenda!',
+          'Sua conta foi criada com sucesso. Agora vamos personalizar sua experiência!',
           [
             {
-              text: 'OK',
-              onPress: () => router.replace('/(tabs)'),
+              text: 'Continuar',
+              onPress: () => router.replace('/preferences-setup'),
             },
           ]
         );

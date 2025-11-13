@@ -8,63 +8,36 @@ import FilterButton from '../../components/FilterButton';
 import { useLocation, calculateDistance } from '../../hooks/useLocation';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import { MOCK_DESTINATIONS, MOCK_CATEGORIES } from '../../data/mockDestinations';
 
 // Map style types
 type MapStyle = 'streets' | 'satellite' | 'topo';
 
-// Mock destinations with coordinates and real images
-const MOCK_POINTS = [
-  {
-    id: 'fortaleza',
-    title: 'Fortaleza de São Miguel',
-    description: 'Historic fortress with city views',
-    coordinate: { latitude: -8.8057, longitude: 13.2343 },
-    category: 'historical',
-    rating: 4.7,
-    image: 'https://images.unsplash.com/photo-1580974852861-c381510bc98a?w=800&h=600&fit=crop',
-    location: 'Luanda',
+// Converter destinos mock para pontos no mapa
+type MapPoint = {
+  id: string;
+  title: string;
+  description: string;
+  coordinate: { latitude: number; longitude: number };
+  category: string;
+  rating: number;
+  image: string;
+  location: string;
+};
+
+const MOCK_POINTS: MapPoint[] = MOCK_DESTINATIONS.map(dest => ({
+  id: String(dest.id),
+  title: dest.name,
+  description: dest.description,
+  coordinate: {
+    latitude: dest.latitude,
+    longitude: dest.longitude,
   },
-  {
-    id: 'tundavala',
-    title: 'Tundavala Gap',
-    description: 'Stunning viewpoint near Lubango',
-    coordinate: { latitude: -14.9225, longitude: 13.5053 },
-    category: 'natural',
-    rating: 4.9,
-    image: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&h=600&fit=crop',
-    location: 'Lubango, Huíla',
-  },
-  {
-    id: 'kalandula',
-    title: 'Kalandula Falls',
-    description: 'One of Africa\'s largest waterfalls',
-    coordinate: { latitude: -9.0686, longitude: 16.0056 },
-    category: 'natural',
-    rating: 4.8,
-    image: 'https://images.unsplash.com/photo-1432405972618-c60b0225b8f9?w=800&h=600&fit=crop',
-    location: 'Malanje',
-  },
-  {
-    id: 'museu',
-    title: 'Museu Nacional de Antropologia',
-    description: 'Cultural museum in Luanda',
-    coordinate: { latitude: -8.8137, longitude: 13.2344 },
-    category: 'cultural',
-    rating: 4.5,
-    image: 'https://images.unsplash.com/photo-1582555172866-f73bb12a2ab3?w=800&h=600&fit=crop',
-    location: 'Luanda',
-  },
-  {
-    id: 'kissama',
-    title: 'Kissama National Park',
-    description: 'Wildlife safari and nature reserve',
-    coordinate: { latitude: -9.1667, longitude: 13.7833 },
-    category: 'natural',
-    rating: 4.6,
-    image: 'https://images.unsplash.com/photo-1493246507139-91e8fad9978e?w=800&h=600&fit=crop',
-    location: 'Bengo',
-  },
-];
+  category: dest.category.slug,
+  rating: dest.rating,
+  image: dest.images[0]?.url || '',
+  location: `${dest.location}, ${dest.province}`,
+}));
 
 export default function MapScreen() {
   const { t } = useTranslation();
@@ -78,7 +51,7 @@ export default function MapScreen() {
   const [mapStyle, setMapStyle] = useState<MapStyle>('streets');
   const [mapKey, setMapKey] = useState<number>(0);
   const [searchQuery, setSearchQuery] = useState<string>('');
-  const [selectedPlace, setSelectedPlace] = useState<typeof MOCK_POINTS[0] | null>(null);
+  const [selectedPlace, setSelectedPlace] = useState<MapPoint | null>(null);
   const { location, loading, error } = useLocation();
   const params = useLocalSearchParams();
   const mapRef = useRef<MapView>(null);
@@ -131,23 +104,24 @@ export default function MapScreen() {
     }
   }, [mapStyle]);
 
-  const filters = [
+  const filters = useMemo(() => [
     { id: 'all', label: t('all'), icon: 'apps-outline' },
-    { id: 'cultural', label: t('cultural'), icon: 'business-outline' },
-    { id: 'natural', label: t('natural'), icon: 'leaf-outline' },
-    { id: 'historical', label: t('historical'), icon: 'library-outline' },
-    { id: 'adventure', label: t('adventure'), icon: 'bicycle-outline' },
-  ];
+    ...MOCK_CATEGORIES.map(cat => ({
+      id: cat.slug,
+      label: cat.name,
+      icon: cat.icon + '-outline' as any,
+    }))
+  ], [t]);
 
   const visiblePoints = useMemo(() => {
     let filtered = (activeFilter && activeFilter !== 'all')
-      ? MOCK_POINTS.filter(p => p.category === activeFilter) 
+      ? MOCK_POINTS.filter((p: MapPoint) => p.category === activeFilter) 
       : MOCK_POINTS;
 
     // Filter by search query
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
-      filtered = filtered.filter(p => 
+      filtered = filtered.filter((p: MapPoint) => 
         p.title.toLowerCase().includes(query) ||
         p.description.toLowerCase().includes(query) ||
         p.location.toLowerCase().includes(query)
@@ -156,7 +130,7 @@ export default function MapScreen() {
 
     // Filter by radius only if enabled and user location is available
     if (useRadiusFilter && location && location.coords) {
-      filtered = filtered.filter(p => {
+      filtered = filtered.filter((p: MapPoint) => {
         const distance = calculateDistance(
           location.coords.latitude,
           location.coords.longitude,
@@ -192,7 +166,7 @@ export default function MapScreen() {
   const fitToMarkers = () => {
     if (visiblePoints.length > 0 && mapRef.current) {
       mapRef.current.fitToCoordinates(
-        visiblePoints.map(p => p.coordinate),
+        visiblePoints.map((p: MapPoint) => p.coordinate),
         {
           edgePadding: { top: 100, right: 50, bottom: 100, left: 50 },
           animated: true,
@@ -205,15 +179,17 @@ export default function MapScreen() {
   const getMarkerColor = (category: string) => {
     switch (category) {
       case 'cultural': return '#8B5CF6';
-      case 'natural': return '#10B981';
-      case 'historical': return '#F59E0B';
-      case 'adventure': return '#EF4444';
+      case 'natureza': return '#10B981';
+      case 'historia': return '#F59E0B';
+      case 'aventura': return '#EF4444';
+      case 'praia': return '#3B82F6';
+      case 'vida-selvagem': return '#F97316';
       default: return '#136F63';
     }
   };
 
   // Open route in external maps app
-  const openRoute = (destination: typeof MOCK_POINTS[0], mode: 'walking' | 'driving') => {
+  const openRoute = (destination: MapPoint, mode: 'walking' | 'driving') => {
     const { latitude, longitude } = destination.coordinate;
     const label = encodeURIComponent(destination.title);
     
@@ -469,7 +445,7 @@ export default function MapScreen() {
           )}
 
           {/* Markers with custom colors */}
-          {visiblePoints.map((p) => (
+          {visiblePoints.map((p: MapPoint) => (
             <Marker 
               key={p.id} 
               coordinate={p.coordinate}
@@ -610,54 +586,76 @@ export default function MapScreen() {
 
       {/* Place Detail Card (Bottom Sheet) */}
       {selectedPlace && (
-        <View 
-          style={{ 
-            position: 'absolute', 
-            bottom: 0, 
-            left: 0, 
-            right: 0,
-            backgroundColor: isDark ? '#1F2937' : '#fff',
-            borderTopLeftRadius: 24,
-            borderTopRightRadius: 24,
-            paddingHorizontal: 20,
-            paddingTop: 20,
-            paddingBottom: 30,
-            shadowColor: '#000',
-            shadowOffset: { width: 0, height: -4 },
-            shadowOpacity: 0.3,
-            shadowRadius: 8,
-            elevation: 10,
-          }}
-        >
-          {/* Close Button */}
+        <>
+          {/* Backdrop - Clica fora para fechar */}
           <TouchableOpacity
+            activeOpacity={1}
             onPress={() => setSelectedPlace(null)}
             style={{
               position: 'absolute',
-              top: 12,
-              right: 12,
-              backgroundColor: isDark ? '#374151' : '#F3F4F6',
-              borderRadius: 20,
-              width: 32,
-              height: 32,
-              justifyContent: 'center',
-              alignItems: 'center',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              backgroundColor: 'rgba(0, 0, 0, 0.5)',
+            }}
+          />
+
+          {/* Card de Detalhes */}
+          <View 
+            style={{ 
+              position: 'absolute', 
+              bottom: 0, 
+              left: 0, 
+              right: 0,
+              backgroundColor: isDark ? '#1F2937' : '#fff',
+              borderTopLeftRadius: 24,
+              borderTopRightRadius: 24,
+              paddingHorizontal: 20,
+              paddingTop: 20,
+              paddingBottom: 30,
+              shadowColor: '#000',
+              shadowOffset: { width: 0, height: -4 },
+              shadowOpacity: 0.3,
+              shadowRadius: 8,
+              elevation: 10,
             }}
           >
-            <Ionicons name="close" size={20} color={isDark ? '#fff' : '#000'} />
-          </TouchableOpacity>
+            {/* Close Button - Com Z-Index maior */}
+            <TouchableOpacity
+              onPress={() => setSelectedPlace(null)}
+              style={{
+                position: 'absolute',
+                top: 12,
+                right: 12,
+                backgroundColor: isDark ? '#374151' : '#F3F4F6',
+                borderRadius: 20,
+                width: 32,
+                height: 32,
+                justifyContent: 'center',
+                alignItems: 'center',
+                zIndex: 10,
+                elevation: 10,
+                shadowColor: '#000',
+                shadowOffset: { width: 0, height: 2 },
+                shadowOpacity: 0.2,
+                shadowRadius: 3,
+              }}
+            >
+              <Ionicons name="close" size={20} color={isDark ? '#fff' : '#000'} />
+            </TouchableOpacity>
 
-          {/* Place Image */}
-          <Image
-            source={{ uri: selectedPlace.image }}
-            style={{
-              width: '100%',
-              height: 180,
-              borderRadius: 16,
-              marginBottom: 16,
-            }}
-            resizeMode="cover"
-          />
+            {/* Place Image */}
+            <Image
+              source={{ uri: selectedPlace.image }}
+              style={{
+                width: '100%',
+                height: 180,
+                borderRadius: 16,
+                marginBottom: 16,
+              }}
+              resizeMode="cover"
+            />
 
           {/* Place Info */}
           <View className="flex-row items-start justify-between mb-2">
@@ -773,6 +771,7 @@ export default function MapScreen() {
             </TouchableOpacity>
           </View>
         </View>
+        </>
       )}
     </View>
   );

@@ -36,8 +36,8 @@ export default function Login() {
       const result = await login(email.trim().toLowerCase(), password);
 
       if (result.success) {
-        // Sucesso - redirecionar para tela principal
-        router.replace('/(tabs)');
+        // Sucesso - verificar preferências
+        router.replace('/check-preferences');
       } else {
         // Exibir erro
         Alert.alert(

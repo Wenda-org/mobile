@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { ScrollView, View, Text, FlatList, TouchableOpacity, RefreshControl } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { Ionicons } from '@expo/vector-icons';
@@ -6,55 +6,8 @@ import { useColorScheme } from '../../components/useColorScheme';
 import SearchBar from '../../components/SearchBar';
 import FilterButton from '../../components/FilterButton';
 import DestinationCard, { Destination } from '../../components/DestinationCard';
-
-// Mock data - Replace with API calls
-const mockDestinations: Destination[] = [
-  {
-    id: '1',
-    name: 'Fortaleza de São Miguel',
-    location: 'Luanda',
-    image: 'https://images.unsplash.com/photo-1580974852861-c381510bc98a?w=800&h=600&fit=crop',
-    rating: 4.5,
-    distance: 5.2,
-    category: 'historical',
-  },
-  {
-    id: '2',
-    name: 'Tundavala Gap',
-    location: 'Lubango',
-    image: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&h=600&fit=crop',
-    rating: 4.8,
-    distance: 120.5,
-    category: 'natural',
-  },
-  {
-    id: '3',
-    name: 'Kalandula Falls',
-    location: 'Malanje',
-    image: 'https://images.unsplash.com/photo-1432405972618-c60b0225b8f9?w=800&h=600&fit=crop',
-    rating: 4.9,
-    distance: 350.0,
-    category: 'natural',
-  },
-  {
-    id: '4',
-    name: 'Miradouro da Lua',
-    location: 'Luanda',
-    image: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&h=600&fit=crop',
-    rating: 4.6,
-    distance: 45.0,
-    category: 'natural',
-  },
-  {
-    id: '5',
-    name: 'Museu Nacional de Antropologia',
-    location: 'Luanda',
-    image: 'https://images.unsplash.com/photo-1582555172866-f73bb12a2ab3?w=800&h=600&fit=crop',
-    rating: 4.3,
-    distance: 8.5,
-    category: 'cultural',
-  },
-];
+import { MOCK_DESTINATIONS, MOCK_CATEGORIES } from '../../data/mockDestinations';
+import { useRecommendations } from '../../hooks/useRecommendations';
 
 export default function DiscoverScreen() {
   const { t } = useTranslation();
@@ -64,29 +17,77 @@ export default function DiscoverScreen() {
   const [activeFilter, setActiveFilter] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
 
-  const filters = [
+  // Obter recomendações personalizadas
+  const { recommendedDestinations, featuredDestinations, hasPreferences } = useRecommendations();
+
+  // Categorias para filtros
+  const filters = useMemo(() => [
     { id: 'all', label: t('all') || 'All', icon: 'apps' },
-    { id: 'cultural', label: t('cultural'), icon: 'business' },
-    { id: 'natural', label: t('natural'), icon: 'leaf' },
-    { id: 'historical', label: t('historical'), icon: 'library' },
-    { id: 'adventure', label: t('adventure') || 'Adventure', icon: 'bicycle' },
-  ];
+    ...MOCK_CATEGORIES.map(cat => ({
+      id: cat.slug,
+      label: cat.name,
+      icon: cat.icon as any,
+    }))
+  ], [t]);
 
   const onRefresh = React.useCallback(() => {
     setRefreshing(true);
-    // Simular refresh - substituir por API call
+    // Simular refresh
     setTimeout(() => {
       setRefreshing(false);
     }, 1000);
   }, []);
 
-  // Filtrar destinos baseado no filtro ativo
-  const filteredDestinations = activeFilter && activeFilter !== 'all'
-    ? mockDestinations.filter(dest => dest.category === activeFilter)
-    : mockDestinations;
+  // Converter destinos mock para formato do card
+  const convertToDestination = (dest: typeof MOCK_DESTINATIONS[0]): Destination => ({
+    id: String(dest.id),
+    name: dest.name,
+    location: dest.province || dest.location,
+    image: dest.images[0]?.url || '',
+    rating: dest.rating,
+    distance: 0, // Pode calcular com useLocation se necessário
+    category: dest.category.slug,
+  });
 
-  const featuredDestinations = filteredDestinations.slice(0, 3);
-  const topDestinations = filteredDestinations.slice(0, 4);
+  // Filtrar destinos baseado no filtro ativo e busca
+  const filteredDestinations = useMemo(() => {
+    let results = MOCK_DESTINATIONS;
+
+    // Filtrar por categoria
+    if (activeFilter && activeFilter !== 'all') {
+      results = results.filter(dest => dest.category.slug === activeFilter);
+    }
+
+    // Filtrar por busca
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
+      results = results.filter(dest =>
+        dest.name.toLowerCase().includes(query) ||
+        dest.location.toLowerCase().includes(query) ||
+        dest.province.toLowerCase().includes(query)
+      );
+    }
+
+    return results.map(convertToDestination);
+  }, [activeFilter, searchQuery]);
+
+  // Top destinos (mais bem avaliados)
+  const topDestinations = useMemo(() => {
+    return filteredDestinations
+      .slice()
+      .sort((a, b) => b.rating - a.rating)
+      .slice(0, 4);
+  }, [filteredDestinations]);
+
+  // Destinos em destaque
+  const featuredCards = useMemo(() => {
+    return featuredDestinations.map(convertToDestination).slice(0, 5);
+  }, [featuredDestinations]);
+
+  // Recomendações personalizadas
+  const recommendedCards = useMemo(() => {
+    return recommendedDestinations.map(convertToDestination);
+  }, [recommendedDestinations]);
 
   return (
     <View className={`flex-1 ${isDark ? 'bg-gray-900' : 'bg-gray-50'}`}>
@@ -276,7 +277,7 @@ export default function DiscoverScreen() {
           </View>
           
           <FlatList
-            data={featuredDestinations}
+            data={featuredCards}
             horizontal
             showsHorizontalScrollIndicator={false}
             keyExtractor={(item) => `featured-${item.id}`}
@@ -305,35 +306,57 @@ export default function DiscoverScreen() {
             </TouchableOpacity>
           </View>
           
-          {topDestinations.map((destination) => (
+          {topDestinations.map((destination: Destination) => (
             <DestinationCard key={destination.id} destination={destination} />
           ))}
         </View>
 
         {/* Recommended for You */}
-        <View className="px-4 mb-8">
-          <View className="flex-row justify-between items-center mb-3">
-            <View>
-              <Text className={`text-xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                {t('recommended_for_you')}
-              </Text>
-              <Text className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
-                Based on your preferences
-              </Text>
+        {hasPreferences && recommendedCards.length > 0 && (
+          <View className="px-4 mb-8">
+            <View className="flex-row justify-between items-center mb-3">
+              <View>
+                <Text className={`text-xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                  {t('recommended_for_you')}
+                </Text>
+                <Text className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
+                  Based on your preferences
+                </Text>
+              </View>
+              <TouchableOpacity>
+                <Ionicons 
+                  name="refresh" 
+                  size={20} 
+                  color="#136F63" 
+                />
+              </TouchableOpacity>
             </View>
-            <TouchableOpacity>
-              <Ionicons 
-                name="refresh" 
-                size={20} 
-                color="#136F63" 
-              />
-            </TouchableOpacity>
+            
+            {recommendedCards.map((destination: Destination) => (
+              <DestinationCard key={`rec-${destination.id}`} destination={destination} />
+            ))}
           </View>
-          
-          {filteredDestinations.slice().reverse().map((destination) => (
-            <DestinationCard key={`rec-${destination.id}`} destination={destination} />
-          ))}
-        </View>
+        )}
+
+        {/* Explore More - Se não tem recomendações personalizadas */}
+        {(!hasPreferences || recommendedCards.length === 0) && (
+          <View className="px-4 mb-8">
+            <View className="flex-row justify-between items-center mb-3">
+              <View>
+                <Text className={`text-xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                  Explore More
+                </Text>
+                <Text className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
+                  Discover amazing places
+                </Text>
+              </View>
+            </View>
+            
+            {filteredDestinations.slice(0, 5).map((destination: Destination) => (
+              <DestinationCard key={`explore-${destination.id}`} destination={destination} />
+            ))}
+          </View>
+        )}
       </ScrollView>
     </View>
   );

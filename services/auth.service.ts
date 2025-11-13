@@ -51,7 +51,9 @@ export const authService = {
    * PUT /api/auth/profile
    */
   async updateProfile(data: UpdateProfileDto): Promise<ApiResponse<User>> {
+    console.log('[authService] Sending updateProfile request:', JSON.stringify(data, null, 2));
     const response = await coreApi.put<ApiResponse<User>>('/auth/profile', data);
+    console.log('[authService] updateProfile response:', response.data);
     return response.data;
   },
 };
