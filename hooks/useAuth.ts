@@ -1,87 +1,216 @@
-import * as SecureStore from 'expo-secure-store';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useState, useEffect } from 'react';
+import { authService } from '../services';
+import type { User } from '../types/api.types';
+import { useAuthContext } from '../contexts/AuthContext';
 
 // This hook manages authentication state
 export function useAuth() {
-  const [user, setUser] = useState<any>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const { user: contextUser, setUser: setContextUser } = useAuthContext();
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    loadUser();
-  }, []);
-
-  const loadUser = async () => {
+  const login = async (email: string, password: string) => {
     try {
-      const userData = await SecureStore.getItemAsync('user');
-      if (userData) {
-        setUser(JSON.parse(userData));
+      setIsLoading(true);
+      setError(null);
+
+      const response = await authService.login({ email, password });
+
+      if (response.success && response.data) {
+        // Salvar token e usuário
+        await AsyncStorage.setItem('@wenda_access_token', response.data.accessToken);
+        await AsyncStorage.setItem('@wenda_user', JSON.stringify(response.data.user));
+        
+        setContextUser(response.data.user);
+        
+        return { 
+          success: true, 
+          user: response.data.user 
+        };
+      } else {
+        const errorMessage = response.message || 'Erro ao fazer login';
+        setError(errorMessage);
+        return { 
+          success: false, 
+          error: errorMessage 
+        };
       }
-    } catch (error) {
-      console.error('Error loading user:', error);
+    } catch (error: any) {
+      const errorMessage = error.response?.data?.message || error.message || 'Erro ao fazer login';
+      setError(errorMessage);
+      console.error('Login error:', error);
+      return { 
+        success: false, 
+        error: errorMessage 
+      };
     } finally {
       setIsLoading(false);
     }
   };
 
-  const login = async (email: string, password: string) => {
+  const register = async (
+    name: string, 
+    email: string, 
+    password: string, 
+    confirmPassword: string,
+    phone?: string,
+    avatarUrl?: string
+  ) => {
     try {
-      // TODO: Call your API endpoint
-      // const response = await axios.post('/api/auth/login', { email, password });
-      // const userData = response.data;
+      setIsLoading(true);
+      setError(null);
 
-      // Mock user data for now
-      const userData = { email, id: '123', name: 'User' };
+      // Validação básica
+      if (password !== confirmPassword) {
+        const errorMessage = 'As senhas não coincidem';
+        setError(errorMessage);
+        return { 
+          success: false, 
+          error: errorMessage 
+        };
+      }
 
-      await SecureStore.setItemAsync('user', JSON.stringify(userData));
-      await SecureStore.setItemAsync('token', 'mock-jwt-token');
-      setUser(userData);
-      return { success: true };
-    } catch (error) {
-      console.error('Login error:', error);
-      return { success: false, error };
-    }
-  };
+      if (password.length < 6) {
+        const errorMessage = 'A senha deve ter no mínimo 6 caracteres';
+        setError(errorMessage);
+        return { 
+          success: false, 
+          error: errorMessage 
+        };
+      }
 
-  const register = async (name: string, email: string, password: string) => {
-    try {
-      // TODO: Call your API endpoint
-      // const response = await axios.post('/api/auth/register', { name, email, password });
-      // const userData = response.data;
+      const response = await authService.register({ 
+        name, 
+        email, 
+        password, 
+        confirmPassword,
+        phone,
+        avatarUrl
+      });
 
-      // Mock user data for now
-      const userData = { email, id: '123', name };
-
-      await SecureStore.setItemAsync('user', JSON.stringify(userData));
-      await SecureStore.setItemAsync('token', 'mock-jwt-token');
-      setUser(userData);
-      return { success: true };
-    } catch (error) {
+      if (response.success && response.data) {
+        // Salvar token e usuário
+        await AsyncStorage.setItem('@wenda_access_token', response.data.accessToken);
+        await AsyncStorage.setItem('@wenda_user', JSON.stringify(response.data.user));
+        
+        setContextUser(response.data.user);
+        
+        return { 
+          success: true, 
+          user: response.data.user 
+        };
+      } else {
+        const errorMessage = response.message || 'Erro ao criar conta';
+        setError(errorMessage);
+        return { 
+          success: false, 
+          error: errorMessage 
+        };
+      }
+    } catch (error: any) {
+      const errorMessage = error.response?.data?.message || error.message || 'Erro ao criar conta';
+      setError(errorMessage);
       console.error('Register error:', error);
-      return { success: false, error };
+      return { 
+        success: false, 
+        error: errorMessage 
+      };
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  // Temporarily disabled Google login
-  const loginWithGoogle = async () => {
-    console.log('Google login temporarily disabled');
+  const updateProfile = async (data: { name?: string; phone?: string; avatarUrl?: string }) => {
+    try {
+      setIsLoading(true);
+      setError(null);
+
+      const response = await authService.updateProfile(data);
+
+      if (response.success && response.data) {
+        // Atualizar usuário localmente
+        await AsyncStorage.setItem('@wenda_user', JSON.stringify(response.data));
+        setContextUser(response.data);
+        
+        return { 
+          success: true, 
+          user: response.data 
+        };
+      } else {
+        const errorMessage = response.message || 'Erro ao atualizar perfil';
+        setError(errorMessage);
+        return { 
+          success: false, 
+          error: errorMessage 
+        };
+      }
+    } catch (error: any) {
+      const errorMessage = error.response?.data?.message || error.message || 'Erro ao atualizar perfil';
+      setError(errorMessage);
+      console.error('Update profile error:', error);
+      return { 
+        success: false, 
+        error: errorMessage 
+      };
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const logout = async () => {
     try {
-      await SecureStore.deleteItemAsync('user');
-      await SecureStore.deleteItemAsync('token');
-      setUser(null);
+      setIsLoading(true);
+      
+      // Chamar endpoint de logout no backend (opcional, mas recomendado)
+      try {
+        await authService.logout();
+      } catch (error) {
+        // Continuar mesmo se o logout no backend falhar
+        console.error('Backend logout error:', error);
+      }
+      
+      // Limpar AsyncStorage
+      await AsyncStorage.removeItem('@wenda_access_token');
+      await AsyncStorage.removeItem('@wenda_user');
+      
+      setContextUser(null);
+      setError(null);
+      
+      return { success: true };
     } catch (error) {
       console.error('Logout error:', error);
+      return { success: false, error };
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const refreshUser = async () => {
+    try {
+      const response = await authService.getProfile();
+      
+      if (response.success && response.data) {
+        await AsyncStorage.setItem('@wenda_user', JSON.stringify(response.data));
+        setContextUser(response.data);
+        return { success: true, user: response.data };
+      }
+      
+      return { success: false };
+    } catch (error) {
+      console.error('Refresh user error:', error);
+      return { success: false, error };
     }
   };
 
   return {
-    user,
+    user: contextUser,
     isLoading,
+    error,
     login,
     register,
-    loginWithGoogle,
+    updateProfile,
     logout,
+    refreshUser,
   };
 }

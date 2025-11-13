@@ -1,35 +1,78 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform, ScrollView, Alert, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { useColorScheme } from '../../components/useColorScheme';
+import { useAuth } from '../../hooks/useAuth';
 
 export default function Login() {
   const router = useRouter();
   const { t } = useTranslation();
   const colorScheme = useColorScheme();
   const isDark = colorScheme === 'dark';
+  const { login, isLoading } = useAuth();
   
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [localLoading, setLocalLoading] = useState(false);
 
-  const handleLogin = () => {
-    // TODO: Integrate authentication
-    console.log('Login:', { email, password });
+  const handleLogin = async () => {
+    // Validação básica
+    if (!email || !password) {
+      Alert.alert('Erro', 'Por favor, preencha todos os campos');
+      return;
+    }
+
+    // Validar formato de email
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      Alert.alert('Erro', 'Por favor, insira um email válido');
+      return;
+    }
+
+    try {
+      setLocalLoading(true);
+      const result = await login(email.trim().toLowerCase(), password);
+
+      if (result.success) {
+        // Sucesso - redirecionar para tela principal
+        router.replace('/(tabs)');
+      } else {
+        // Exibir erro
+        Alert.alert(
+          'Erro ao fazer login',
+          result.error || 'Email ou senha incorretos. Tente novamente.'
+        );
+      }
+    } catch (error) {
+      Alert.alert('Erro', 'Ocorreu um erro inesperado. Tente novamente.');
+      console.error('Login error:', error);
+    } finally {
+      setLocalLoading(false);
+    }
   };
 
   const handleGoogleLogin = () => {
-    // TODO: Integrate Google OAuth
-    console.log('Google Login');
+    Alert.alert(
+      'Em breve',
+      'Login com Google estará disponível em breve!'
+    );
   };
+
+  const loading = isLoading || localLoading;
 
   return (
     <KeyboardAvoidingView 
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      className={`flex-1 ${isDark ? 'bg-background-dark' : 'bg-background-light'}`}
+      className="flex-1"
     >
-      <ScrollView contentContainerStyle={{ flexGrow: 1 }} showsVerticalScrollIndicator={false}>
-        <View className="flex-1 justify-center px-6 py-12">
+      <View className={`flex-1 ${isDark ? 'bg-background-dark' : 'bg-background-light'}`}>
+        <ScrollView 
+          contentContainerStyle={{ flexGrow: 1 }} 
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+        >
+          <View className="flex-1 justify-center px-6 py-12">
           {/* Header */}
           <View className="mb-10">
             <Text className={`text-4xl font-bold mb-2 ${isDark ? 'text-text-dark' : 'text-text-light'}`}>
@@ -92,7 +135,8 @@ export default function Login() {
           {/* Login Button */}
           <TouchableOpacity
             onPress={handleLogin}
-            className="bg-primary rounded-xl py-4 items-center mb-4"
+            disabled={loading}
+            className={`bg-primary rounded-xl py-4 items-center mb-4 ${loading ? 'opacity-50' : ''}`}
             style={{
               shadowColor: '#000',
               shadowOffset: { width: 0, height: 2 },
@@ -101,7 +145,11 @@ export default function Login() {
               elevation: 4,
             }}
           >
-            <Text className="text-white text-lg font-semibold">{t('login')}</Text>
+            {loading ? (
+              <ActivityIndicator color="white" />
+            ) : (
+              <Text className="text-white text-lg font-semibold">{t('login')}</Text>
+            )}
           </TouchableOpacity>
 
           {/* Divider */}
@@ -146,6 +194,7 @@ export default function Login() {
           </View>
         </View>
       </ScrollView>
+      </View>
     </KeyboardAvoidingView>
   );
 }
