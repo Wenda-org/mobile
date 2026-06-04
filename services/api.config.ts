@@ -11,11 +11,12 @@ export const coreApi = axios.create({
   timeout: 10000,
 });
 
-// ML API Configuration (Backend de Machine Learning)
+// ML API Configuration (Conexão direta com backend-ml)
 export const mlApi = axios.create({
   baseURL: 'https://backend-ml-c75p.onrender.com/api/ml',
   headers: {
     'Content-Type': 'application/json',
+    'X-ML-API-KEY': 'wenda-ml-internal-secret-key', // Chave interna para bypass do filtro de segurança
   },
   timeout: 15000, // ML pode demorar mais
 });
