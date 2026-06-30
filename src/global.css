@@ -1,0 +1,12 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --primary: 19 111 99; /* #136F63 in RGB */
+    --secondary: 255 209 102; /* #FFD166 in RGB */
+    --success: 6 214 160; /* #06D6A0 in RGB */
+    --error: 239 71 111; /* #EF476F in RGB */
+  }
+}
